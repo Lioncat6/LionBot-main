@@ -77,11 +77,23 @@ module.exports = {
           throw new Error(`NetherGames api error: ${response.status}`);
         }
         const json = await response.json();
+        var tier = json["tier"];
+        if (!tier) {
+          tier = "none";
+        }
         const statsEmbed = new EmbedBuilder()
           .setColor(0xd79b4e)
           .setTitle(`${json["name"]}'s Player Stats`)
           //.setDescription(json["bio"])
           .addFields(
+            {
+              name: "Level",
+              value: `${json["level"]} (${json["xpToNextLevel"]} xp to ${json["level"]+1})`
+            },
+            {
+              name: "Xp",
+              value: `${json["xp"]}`
+            },
             {
               name: "Kills",
               value: `${json["kills"]}`,
@@ -108,7 +120,7 @@ module.exports = {
             },
             {
               name: "Credits",
-              value: `${json["credits"]}`,
+              value: `${json["credits"]} (${tier})`,
             },
             {
               name: "Crate Keys",
@@ -143,6 +155,10 @@ module.exports = {
         }
         if (ranks == "") {
           ranks = "none";
+        }
+        var voted = "no"
+        if (json["voteStatus"] == 1){
+          voted = "yes"
         }
         var tier = json["tier"];
         if (!tier) {
@@ -222,6 +238,10 @@ module.exports = {
             {
               name: "Last Seen",
               value: `${json["lastSeen"]} ago`,
+            },
+            {
+              name: "Has voted today",
+              value: `${voted}`
             },
             {
               name: "Last Location",
