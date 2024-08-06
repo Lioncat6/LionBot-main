@@ -19,12 +19,29 @@ module.exports = {
         .setDescription("Fetch player stats")
         .addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
     )
+    .addSubcommandGroup((subcommand) =>
+      subcommand
+        .setName("roles")
+        .setDescription("Nethetgames role command")
+        .addSubcommand((subcommand) =>
+      subcommand
+        .setName("claim")
+        .setDescription("Claim roles depending on your NetherGames stats")
+        .addStringOption((option) => option.setName("ign").setDescription("Your name on the NetherGames server").setRequired(true))
+        )
+        .addSubcommand((subcommand) =>
+      subcommand
+        .setName("settings")
+        .setDescription("Configure roles for this command")
+    )
+    )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("info")
         .setDescription("Fetch player info")
         .addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
-    )
+        )
+    
     .addSubcommand((subcommand) =>
       subcommand
         .setName("skin")
