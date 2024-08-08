@@ -8,7 +8,12 @@ module.exports = {
   			activities: [{ name: `you use /help`, type: ActivityType.Watching }],
   			status: 'online',
 		});
-        const Guilds = client.guilds.cache.map(guild => guild.id);
+        const Guilds = [];
+		client.guilds.cache.forEach(guild => {
+			Guilds.push([guild.id, guild.name, guild.memberCount]);
+		});
+
+
         console.log(Guilds)
 	},
 };
