@@ -109,9 +109,12 @@ module.exports = {
 			if (interaction.options.getSubcommand() == "playerpicture") {
 				interaction.editReply({ content: "Fetching stats..." });
 				const playername = interaction.options.getString("ign");
-				const options = interaction.options.getString("options");
+				let options = interaction.options.getString("options");
 				let transparent = false;
 				let unbaked = false;
+        if (!options){
+          options = "none"
+        }
 				if (options.toLowerCase().includes("transparent")) {
 					transparent = true;
 				}
