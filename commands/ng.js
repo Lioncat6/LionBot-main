@@ -7,6 +7,8 @@ const fetchHeaders = new Headers();
 fetchHeaders.append("Content-Type", "application/json");
 fetchHeaders.append("Authorization", `${ngToken}`);
 
+const playerPictureCooldowns = new Set();
+
 function format_seconds(minutes) {
 	const weeks = Math.floor(minutes / 10080); // 1 week = 7 days * 24 hours * 60 minutes
 	const days = Math.floor((minutes % 10080) / 1440); // 1 day = 24 hours * 60 minutes
@@ -113,128 +115,139 @@ module.exports = {
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
-				const t1 = Date.now();
-				interaction.editReply({ content: "Fetching stats..." });
-				const playername = interaction.options.getString("ign");
-				let options = interaction.options.getString("options");
-				let transparent = false;
-				let unbaked = false;
-				if (!options) {
-					options = "none";
-				}
-				if (options.toLowerCase().includes("transparent")) {
-					transparent = true;
-				}
-				if (options.toLowerCase().includes("unbaked")) {
-					unbaked = true;
-				}
-				const render = true;
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`, {
-					method: "GET",
-					headers: fetchHeaders,
-				});
-				if (!response.ok) {
-					if (response.status == 404) {
-						throw new Error(`Player not found!`);
+				if (!playerPictureCooldowns.has(interaction.user.id)) {
+					const t1 = Date.now();
+          playerPictureCooldowns.add(interaction.user.id);
+					setTimeout(() => {
+						playerPictureCooldowns.delete(interaction.user.id);
+					}, 30000);
+					interaction.editReply({ content: "Fetching stats..." });
+					const playername = interaction.options.getString("ign");
+					let options = interaction.options.getString("options");
+					let transparent = false;
+					let unbaked = false;
+					if (!options) {
+						options = "none";
 					}
-					throw new Error(`NetherGames api error: ${response.status}`);
-				}
-				let json;
-				json = await response.json();
-				var skinUrl = json["skin"];
-				const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
-					method: "GET",
-					headers: fetchHeaders,
-				});
-
-				if (!monthlyResponse.ok) {
-					if (monthlyResponse.status == 404) {
-						throw new Error(`Player not found!`);
+					if (options.toLowerCase().includes("transparent")) {
+						transparent = true;
 					}
-					throw new Error(`NetherGames api error: ${monthlyResponse.status}`);
-				}
-				let monthly;
-				monthly = await monthlyResponse.json();
-
-				const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
-					method: "GET",
-					headers: fetchHeaders,
-				});
-				if (!weeklyResponse.ok) {
-					if (weeklyResponse.status == 404) {
-						throw new Error(`Player not found!`);
+					if (options.toLowerCase().includes("unbaked")) {
+						unbaked = true;
 					}
-					throw new Error(`NetherGames api error: ${weeklyResponse.status}`);
-				}
-				let weekly;
-				weekly = await weeklyResponse.json();
-
-				let playerPictureBuffer;
-				const t2 = Date.now();
-				let t3;
-				interaction.editReply({ content: "Downloading skin..." });
-				if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
-					const skinResponse = await fetch(skinUrl);
-					if (skinResponse.status === 200) {
-						const blob = await skinResponse.arrayBuffer();
-						const data = await Buffer.from(blob);
-						const base64Data = await data.toString("base64");
-						const fullSkinUrl = `https://vzge.me/full/832/${base64Data}`;
-						async function downloadSkin(url) {
-							const headers = new Headers({
-								"User-Agent": "LionBot-Discord-Bot <lioncat6pmc@gmail.com>", // Your custom User-Agent string
-								Accept: "application/json",
-								"Content-Type": "application/json",
-							});
-
-							const skinDataResponse = await fetch(url, {
-								method: "GET",
-								headers: headers,
-							});
-
-							if (skinDataResponse.ok) {
-								const buffer = await skinDataResponse.arrayBuffer();
-								return buffer; // This is the image data in a Buffer
-							} else {
-								throw new Error("Skin API error:", skinDataResponse.status);
-								return null;
-							}
+					const render = true;
+					const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`, {
+						method: "GET",
+						headers: fetchHeaders,
+					});
+					if (!response.ok) {
+						if (response.status == 404) {
+							throw new Error(`Player not found!`);
 						}
-						t3 = Date.now();
-						interaction.editReply({ content: "Rendering Picture..." });
-						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
-					} else {
 						throw new Error(`NetherGames api error: ${response.status}`);
 					}
-				} else {
-					t3 = Date.now();
-					interaction.editReply({ content: "Rendering Picture..." });
-					playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
-				}
+					let json;
+					json = await response.json();
+					var skinUrl = json["skin"];
+					const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
+						method: "GET",
+						headers: fetchHeaders,
+					});
 
-				const file = new AttachmentBuilder(playerPictureBuffer);
-				file.name = "playerPicture.png";
-				const playerPictureEmbed = new EmbedBuilder()
-					.setColor(0xd79b4e)
-					.setTitle(`${json["name"]}'s Player Picture`)
-					.addFields(
-						{
-							name: "API Fetch Time:",
-							value: `${t2 - t1}ms`,
-						},
-						{
-							name: "Skin Fetch Time:",
-							value: `${t3 - t2}ms`,
-						},
-						{
-							name: "Picture Render Time:",
-							value: `${Date.now() - t3}ms`,
+					if (!monthlyResponse.ok) {
+						if (monthlyResponse.status == 404) {
+							throw new Error(`Player not found!`);
 						}
-					)
-					.setThumbnail(json["avatar"])
-					.setImage(`attachment://playerPicture.png`)
-					.setTimestamp(Date.now());
-				await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
+						throw new Error(`NetherGames api error: ${monthlyResponse.status}`);
+					}
+					let monthly;
+					monthly = await monthlyResponse.json();
+
+					const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
+						method: "GET",
+						headers: fetchHeaders,
+					});
+					if (!weeklyResponse.ok) {
+						if (weeklyResponse.status == 404) {
+							throw new Error(`Player not found!`);
+						}
+						throw new Error(`NetherGames api error: ${weeklyResponse.status}`);
+					}
+					let weekly;
+					weekly = await weeklyResponse.json();
+
+					let playerPictureBuffer;
+					const t2 = Date.now();
+					let t3;
+					interaction.editReply({ content: "Downloading skin..." });
+					if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
+						const skinResponse = await fetch(skinUrl);
+						if (skinResponse.status === 200) {
+							const blob = await skinResponse.arrayBuffer();
+							const data = await Buffer.from(blob);
+							const base64Data = await data.toString("base64");
+							const fullSkinUrl = `https://vzge.me/full/832/${base64Data}`;
+							async function downloadSkin(url) {
+								const headers = new Headers({
+									"User-Agent": "LionBot-Discord-Bot <lioncat6pmc@gmail.com>", // Your custom User-Agent string
+									Accept: "application/json",
+									"Content-Type": "application/json",
+								});
+
+								const skinDataResponse = await fetch(url, {
+									method: "GET",
+									headers: headers,
+								});
+
+								if (skinDataResponse.ok) {
+									const buffer = await skinDataResponse.arrayBuffer();
+									return buffer; // This is the image data in a Buffer
+								} else {
+									throw new Error("Skin API error:", skinDataResponse.status);
+									return null;
+								}
+							}
+							t3 = Date.now();
+							interaction.editReply({ content: "Rendering Picture..." });
+							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
+						} else {
+							throw new Error(`NetherGames api error: ${response.status}`);
+						}
+					} else {
+						t3 = Date.now();
+						interaction.editReply({ content: "Rendering Picture..." });
+						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
+					}
+
+					const file = new AttachmentBuilder(playerPictureBuffer);
+					file.name = "playerPicture.png";
+					const playerPictureEmbed = new EmbedBuilder()
+						.setColor(0xd79b4e)
+						.setTitle(`${json["name"]}'s Player Picture`)
+						.addFields(
+							{
+								name: "API Fetch Time:",
+								value: `${t2 - t1}ms`,
+							},
+							{
+								name: "Skin Fetch Time:",
+								value: `${t3 - t2}ms`,
+							},
+							{
+								name: "Picture Render Time:",
+								value: `${Date.now() - t3}ms`,
+							}
+						)
+						.setThumbnail(json["avatar"])
+						.setImage(`attachment://playerPicture.png`)
+						.setTimestamp(Date.now());
+					
+					await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
+				} else {
+					await interaction.editReply({ content: "Please wait 30 seconds before running this command again."});
+          setTimeout(() => interaction.deleteReply(), 10000);
+
+				}
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
 				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
