@@ -2,10 +2,14 @@ const Jimp = require("jimp");
 const fs = require("node:fs");
 const path = require("node:path");
 
-var fileName = "./assets/1.png";
-
 var mjRegular = "./assets/fonts/mojang regular.fnt";
 var mjBold = "./assets/fonts/mojang bold.fnt";
+
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
 
 async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, rightAlign) {
 	var rawTextX = x;
@@ -199,7 +203,7 @@ function scaleBrightness(hexColor, scale) {
 	return adjustedHex;
 }
 
-async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
+async function createPlayerPictureText(allTime, monthly, weekly, skinData, transparent, unbaked) {
 	//variable prep
 	var guild = allTime["guild"];
 	if (!guild) {
@@ -306,15 +310,31 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		firstJoin = `${allTime["firstJoin"]} (${daysAgo} days ago)`;
 	}
 	//image start
+	const bgNumber = getRandomNumber(1, 5);
+	var fileName
+	if (!transparent){
+		fileName= `./assets/${bgNumber}.png`;
+	} else {
+		fileName = `./assets/transparentBG.png`
+	}
+
 	var t1 = Date.now();
 	let bgImage = await Jimp.read(fileName);
-	let overlay = await Jimp.read("./assets/overlay.png");
-	bgImage.blit(overlay, 0, 0);
+	if (!transparent){
+		let overlay = await Jimp.read("./assets/overlay.png");
+		bgImage.blit(overlay, 0, 0);
+	}
 	const imgWidth = bgImage.bitmap.width;
 	const imgHeight = bgImage.bitmap.height;
-	bgImage = await drawText(bgImage, `Generated  using  LionBot`, 5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	
+	if (!unbaked){
+		let bakedText = await Jimp.read("./assets/baked.png");
+		bgImage.blit(bakedText, 0, 0);
+	}
+
+	if (unbaked){bgImage = await drawText(bgImage, `Generated  using  LionBot`, 5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);}
 	bgImage = await drawText(bgImage, `${(new Date(Date.now()).toLocaleString())}`, imgWidth-5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false, true);
-	bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight-20, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	if (unbaked){bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight-20, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);}
 	bgImage = await drawText(bgImage, `${playerName}`, imgWidth / 2, 50, 2, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	if (levelColors.length > 1) {
@@ -347,17 +367,18 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		onlineStatus = ["Online", "#00AA00", true, scaleBrightness("#00AA00", 0.2), 2, false];
 	}
 
-	bgImage = await drawText(bgImage, "First Joined", imgWidth / 2 + 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (unbaked){bgImage = await drawText(bgImage, "First Joined", imgWidth / 2 + 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);}
 	bgImage = await drawText(bgImage, `${firstJoin}`, imgWidth / 2 + 350, 185, 0.55, "#00AAAA", true, scaleBrightness("#00AAAA", 0.2), 3, false, true);
-	bgImage = await drawText(bgImage, "Play Time", imgWidth / 2 + 350, 208, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (unbaked){bgImage = await drawText(bgImage, "Play Time", imgWidth / 2 + 350, 208, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);}
 	bgImage = await drawText(bgImage, `${playTime}`, imgWidth / 2 + 350, 233, 0.55, "#FF55FF", true, scaleBrightness("#FF55FF", 0.2), 3, false, true);
-	bgImage = await drawText(bgImage, "Last Seen", imgWidth / 2 - 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (unbaked){bgImage = await drawText(bgImage, "Last Seen", imgWidth / 2 - 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);}
 	bgImage = await drawMulticoloredText(bgImage, imgWidth / 2 - 350, 185, 0.55, [[`${lastSeen} (`, "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 2, false], onlineStatus, [")", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 2, false], [`[${lastSeenLocation}]`, "#AAAAAA", true, scaleBrightness("#FFFFFF", 0.2), 2, false]], true);
 
 	//statistics
 	const statsBase = 300;
-	bgImage = await drawText(bgImage, "Statistics", imgWidth / 2 + 350, 270, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (unbaked){bgImage = await drawText(bgImage, "Statistics", imgWidth / 2 + 350, 270, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);}
 	const leftRowCenter = imgWidth / 2 + 250;
+	if (unbaked){
 	bgImage = await drawMulticoloredText(
 		bgImage,
 		leftRowCenter,
@@ -442,7 +463,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		false,
 		true
 	);
-
+}
 	bgImage = await drawText(bgImage, `${xp}`, leftRowCenter + 5, statsBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
@@ -456,6 +477,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 	}
 
 	const rightRowCenter = imgWidth / 2 + 450;
+	if (unbaked){
 	bgImage = await drawMulticoloredText(
 		bgImage,
 		rightRowCenter,
@@ -540,7 +562,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		false,
 		true
 	);
-
+	}
 	bgImage = await drawText(bgImage, `${crateKeys}`, rightRowCenter + 5, statsBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${allKills}`, rightRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${allDeaths}`, rightRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
@@ -570,8 +592,9 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 
 	//Win Streaks
 	const winSteaksBase = 255;
-	bgImage = await drawText(bgImage, "Win Streaks", imgWidth / 2 - 350, 225, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (unbaked){bgImage = await drawText(bgImage, "Win Streaks", imgWidth / 2 - 350, 225, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);}
 	const leftLeftRowCenter = imgWidth / 2 - 450;
+	if (unbaked){
 	bgImage = await drawMulticoloredText(
 		bgImage,
 		leftLeftRowCenter - 10,
@@ -668,7 +691,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		false,
 		true
 	);
-
+	}
 	bgImage = await drawText(bgImage, `${bwSoloStreaks["current"]} / ${bwSoloStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${bwDoublesStreaks["current"]} / ${bwDoublesStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${bwSquadStreaks["current"]} / ${bwSquadStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
@@ -679,6 +702,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 	bgImage = await drawText(bgImage, `${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 140, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 
 	const leftRightRowCenter = imgWidth / 2 - 250;
+	if (unbaked){
 	bgImage = await drawMulticoloredText(
 		bgImage,
 		leftRightRowCenter + 10,
@@ -775,7 +799,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		false,
 		true
 	);
-
+	}
 	bgImage = await drawText(bgImage, `${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${sgStreaks["current"]} / ${sgStreaks["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
@@ -787,6 +811,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 
 	//monthly / weekly
 	const wmBase = 455;
+	if (unbaked){
 	bgImage = await drawText(bgImage, "Monthly        •        Weekly", imgWidth / 2 - 350, wmBase - 30, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	bgImage = await drawMulticoloredText(
 		bgImage,
@@ -806,7 +831,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 20,
 		0.5,
 		[
-			["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -818,7 +843,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 40,
 		0.5,
 		[
-			["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -830,7 +855,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 60,
 		0.5,
 		[
-			["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -842,12 +867,25 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 80,
 		0.5,
 		[
+			["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+		],
+		false,
+		true
+	);
+	bgImage = await drawMulticoloredText(
+		bgImage,
+		leftLeftRowCenter,
+		wmBase + 100,
+		0.5,
+		[
 			["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
 		true
 	);
+}
 	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
 	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
 
@@ -860,13 +898,14 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		monthlyWLR = 0;
 	}
 	bgImage = await drawText(bgImage, `${monthlyWins}`, leftLeftRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyKills}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyDeaths}`, leftLeftRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyLosses}`, leftLeftRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyKills}`, leftLeftRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyDeaths}`, leftLeftRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${monthlyCredits}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${monthlyXp}`, leftLeftRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-
+	if (unbaked){
 	bgImage = await drawMulticoloredText(
 		bgImage,
 		leftRightRowCenter,
@@ -885,7 +924,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 20,
 		0.5,
 		[
-			["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -897,7 +936,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 40,
 		0.5,
 		[
-			["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -909,7 +948,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 60,
 		0.5,
 		[
-			["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
@@ -921,12 +960,25 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		wmBase + 80,
 		0.5,
 		[
+			["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
+			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+		],
+		false,
+		true
+	);
+	bgImage = await drawMulticoloredText(
+		bgImage,
+		leftRightRowCenter,
+		wmBase + 100,
+		0.5,
+		[
 			["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
 			[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
 		],
 		false,
 		true
 	);
+}
 	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
 	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
 	let weeklyKDR = truncateToThreeDecimals(weeklyWins / weeklyLosses);
@@ -938,10 +990,11 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 		weeklyWLR = 0;
 	}
 	bgImage = await drawText(bgImage, `${weeklyWins}`, leftRightRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyKills}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyDeaths}`, leftRightRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyLosses}`, leftRightRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyKills}`, leftRightRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyDeaths}`, leftRightRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${weeklyCredits}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${weeklyXp}`, leftRightRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 

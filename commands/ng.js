@@ -83,6 +83,7 @@ module.exports = {
 				.setName("playerpicture")
 				.setDescription("Generate player picture")
 				.addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
+				.addStringOption((option) => option.setName("options").setDescription("For developmental purposes"))
 		)
 		.addSubcommand((subcommand) => subcommand.setName("online").setDescription("Fetch online player count")),
 	async execute(interaction) {
@@ -106,8 +107,17 @@ module.exports = {
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			}
 			if (interaction.options.getSubcommand() == "playerpicture") {
-        interaction.editReply({ content: "Fetching stats..." });
+				interaction.editReply({ content: "Fetching stats..." });
 				const playername = interaction.options.getString("ign");
+				const options = interaction.options.getString("options");
+				let transparent = false;
+				let unbaked = false;
+				if (options.toLowerCase().includes("transparent")) {
+					transparent = true;
+				}
+				if (options.toLowerCase().includes("unbaked")) {
+					unbaked = true;
+				}
 				const render = true;
 				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`);
 				if (!response.ok) {
@@ -136,8 +146,8 @@ module.exports = {
 				}
 				const weekly = await weeklyResponse.json();
 
-        let playerPictureBuffer 
-        interaction.editReply({ content: "Downloading skin..." });
+				let playerPictureBuffer;
+				interaction.editReply({ content: "Downloading skin..." });
 				if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
 					const skinResponse = await fetch(skinUrl);
 					if (skinResponse.status === 200) {
@@ -165,18 +175,18 @@ module.exports = {
 								return null;
 							}
 						}
-            interaction.editReply({ content: "Rendering Picture..." });
-						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)));
+						interaction.editReply({ content: "Rendering Picture..." });
+						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl), transparent, unbaked));
 					} else {
 						throw new Error(`NetherGames api error: ${response.status}`);
 					}
 				} else {
-          interaction.editReply({ content: "Rendering Picture..." });
-					playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly);
+					interaction.editReply({ content: "Rendering Picture..." });
+					playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
 				}
-        const file = new AttachmentBuilder(playerPictureBuffer);
-        file.name = "playerPicture.png"
-        await interaction.editReply({ content: "", files: [file] });
+				const file = new AttachmentBuilder(playerPictureBuffer);
+				file.name = "playerPicture.png";
+				await interaction.editReply({ content: "", files: [file] });
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
 				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
@@ -788,7 +798,7 @@ module.exports = {
 						}
 
 						const file = new AttachmentBuilder(Buffer.from(await downloadSkin(fullSkinUrl)));
-            file.name = `${json["name"]}.png`
+						file.name = `${json["name"]}.png`;
 						const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setImage(`attachment://${json["name"]}.png`).setTimestamp(Date.now());
 						await interaction.editReply({ embeds: [skinEmbed], files: [file] });
 					} else {
