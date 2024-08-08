@@ -310,7 +310,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		firstJoin = `${allTime["firstJoin"]} (${daysAgo} days ago)`;
 	}
 	//image start
-	const bgNumber = getRandomNumber(1, 5);
+	const bgNumber = getRandomNumber(1, 6);
 	var fileName
 	if (!transparent){
 		fileName= `./assets/${bgNumber}.png`;

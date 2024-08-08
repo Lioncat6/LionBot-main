@@ -1,7 +1,11 @@
 const { SlashCommandBuilder, Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require("discord.js");
 var request = require("request").defaults({ encoding: null });
-
+const { ngToken } = require("../config.json");
 const playerPicture = require("../scripts/generatePlayerpicture.js");
+
+const fetchHeaders = new Headers();
+fetchHeaders.append("Content-Type", "application/json");
+fetchHeaders.append("Authorization", `${ngToken}`);
 
 function format_seconds(minutes) {
 	const weeks = Math.floor(minutes / 10080); // 1 week = 7 days * 24 hours * 60 minutes
@@ -94,7 +98,10 @@ module.exports = {
 		}
 		try {
 			if (interaction.options.getSubcommand() == "online") {
-				const response = await fetch("https://api.ngmc.co/v1/servers/ping");
+				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
@@ -105,17 +112,16 @@ module.exports = {
 					.setDescription(`There are ${json["players"]["online"]}/${json["players"]["max"]} players online`)
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
-			}
-			if (interaction.options.getSubcommand() == "playerpicture") {
-        const t1 = Date.now()
+			} else if (interaction.options.getSubcommand() == "playerpicture") {
+				const t1 = Date.now();
 				interaction.editReply({ content: "Fetching stats..." });
 				const playername = interaction.options.getString("ign");
 				let options = interaction.options.getString("options");
 				let transparent = false;
 				let unbaked = false;
-        if (!options){
-          options = "none"
-        }
+				if (!options) {
+					options = "none";
+				}
 				if (options.toLowerCase().includes("transparent")) {
 					transparent = true;
 				}
@@ -123,36 +129,49 @@ module.exports = {
 					unbaked = true;
 				}
 				const render = true;
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				var skinUrl = json["skin"];
+				const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 
-				const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`);
-				if (!response.ok) {
-					if (response.status == 404) {
+				if (!monthlyResponse.ok) {
+					if (monthlyResponse.status == 404) {
 						throw new Error(`Player not found!`);
 					}
-					throw new Error(`NetherGames api error: ${response.status}`);
+					throw new Error(`NetherGames api error: ${monthlyResponse.status}`);
 				}
-				const monthly = await monthlyResponse.json();
-				const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`);
-				if (!response.ok) {
-					if (response.status == 404) {
+				let monthly;
+				monthly = await monthlyResponse.json();
+
+				const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!weeklyResponse.ok) {
+					if (weeklyResponse.status == 404) {
 						throw new Error(`Player not found!`);
 					}
-					throw new Error(`NetherGames api error: ${response.status}`);
+					throw new Error(`NetherGames api error: ${weeklyResponse.status}`);
 				}
-				const weekly = await weeklyResponse.json();
+				let weekly;
+				weekly = await weeklyResponse.json();
 
 				let playerPictureBuffer;
-        const t2 = Date.now()
-        let t3
+				const t2 = Date.now();
+				let t3;
 				interaction.editReply({ content: "Downloading skin..." });
 				if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
 					const skinResponse = await fetch(skinUrl);
@@ -181,31 +200,55 @@ module.exports = {
 								return null;
 							}
 						}
-            t3 = Date.now()
+						t3 = Date.now();
 						interaction.editReply({ content: "Rendering Picture..." });
 						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
 					} else {
 						throw new Error(`NetherGames api error: ${response.status}`);
 					}
 				} else {
-          t3 = Date.now()
+					t3 = Date.now();
 					interaction.editReply({ content: "Rendering Picture..." });
 					playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
 				}
-        
+
 				const file = new AttachmentBuilder(playerPictureBuffer);
 				file.name = "playerPicture.png";
-				await interaction.editReply({ content: `API Fetch Time: ${t2-t1}ms\nSkin Fetch Time: ${t3-t2}ms\nPicture Render Time: ${Date.now()-t3}ms`, files: [file] });
+				const playerPictureEmbed = new EmbedBuilder()
+					.setColor(0xd79b4e)
+					.setTitle(`${json["name"]}'s Player Picture`)
+					.addFields(
+						{
+							name: "API Fetch Time:",
+							value: `${t2 - t1}ms`,
+						},
+						{
+							name: "Skin Fetch Time:",
+							value: `${t3 - t2}ms`,
+						},
+						{
+							name: "Picture Render Time:",
+							value: `${Date.now() - t3}ms`,
+						}
+					)
+					.setThumbnail(json["avatar"])
+					.setImage(`attachment://playerPicture.png`)
+					.setTimestamp(Date.now());
+				await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				var tier = json["tier"];
 				if (!tier) {
 					tier = "none";
@@ -266,14 +309,18 @@ module.exports = {
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				let embedFields = [];
 				let friendlyGameName = "";
 				let footer = "";
@@ -627,14 +674,18 @@ module.exports = {
 				}
 			} else if (interaction.options.getSubcommand() == "info") {
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				var ranks = "";
 				var ranksiterator = 0;
 				for (x of json["ranks"]) {
@@ -748,14 +799,18 @@ module.exports = {
 				await interaction.editReply({ embeds: [infoEmbed] });
 			} else if (interaction.options.getSubcommand() == "punishmentsaaaa") {
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				const punishmentsEmbed = new EmbedBuilder()
 					.setColor(0xd79b4e)
 					.setTitle(`${json["name"]}'s Punishments`)
@@ -769,14 +824,18 @@ module.exports = {
 			} else if (interaction.options.getSubcommand() == "skin") {
 				const playername = interaction.options.getString("ign");
 				const render = interaction.options.getBoolean("render");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
+				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
+				let json;
+				json = await response.json();
 				var skinUrl = json["skin"];
 				if (render) {
 					const skinResponse = await fetch(skinUrl);
