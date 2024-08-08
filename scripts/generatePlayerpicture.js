@@ -314,7 +314,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData) {
 	const imgHeight = bgImage.bitmap.height;
 	bgImage = await drawText(bgImage, `Generated  using  LionBot`, 5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${(new Date(Date.now()).toLocaleString())}`, imgWidth-5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false, true);
-	bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight-15, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight-20, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${playerName}`, imgWidth / 2, 50, 2, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	if (levelColors.length > 1) {
