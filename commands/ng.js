@@ -107,6 +107,7 @@ module.exports = {
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			}
 			if (interaction.options.getSubcommand() == "playerpicture") {
+        const t1 = Date.now()
 				interaction.editReply({ content: "Fetching stats..." });
 				const playername = interaction.options.getString("ign");
 				let options = interaction.options.getString("options");
@@ -150,6 +151,8 @@ module.exports = {
 				const weekly = await weeklyResponse.json();
 
 				let playerPictureBuffer;
+        const t2 = Date.now()
+        let t3
 				interaction.editReply({ content: "Downloading skin..." });
 				if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
 					const skinResponse = await fetch(skinUrl);
@@ -178,18 +181,21 @@ module.exports = {
 								return null;
 							}
 						}
+            t3 = Date.now()
 						interaction.editReply({ content: "Rendering Picture..." });
-						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl), transparent, unbaked));
+						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
 					} else {
 						throw new Error(`NetherGames api error: ${response.status}`);
 					}
 				} else {
+          t3 = Date.now()
 					interaction.editReply({ content: "Rendering Picture..." });
 					playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
 				}
+        
 				const file = new AttachmentBuilder(playerPictureBuffer);
 				file.name = "playerPicture.png";
-				await interaction.editReply({ content: "", files: [file] });
+				await interaction.editReply({ content: `API Fetch Time: ${t2-t1}ms\nSkin Fetch Time: ${t3-t2}ms\nPicture Render Time: ${Date.now()-t3}ms`, files: [file] });
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
 				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`);
