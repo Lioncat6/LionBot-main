@@ -517,7 +517,7 @@ module.exports = {
 				});
 				if (!response.ok) {
 					if (response.status == 404) {
-						throw new Error(`Player not found!`);
+						throw new Error(`Guild not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
@@ -1089,8 +1089,8 @@ module.exports = {
 					embeds: [ngErrEmbed],
 					ephemeral: true,
 				});
-			} else if (String(error).includes("Player not found!")) {
-				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player Not Found ❌`);
+			} else if (String(error).includes("not found")) {
+				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
 				await interaction.editReply({
 					content: "",
 					embeds: [playerNotFoundEmbed],
