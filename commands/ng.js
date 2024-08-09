@@ -216,7 +216,7 @@ module.exports = {
 					const t2 = Date.now();
 					let t3;
 					interaction.editReply({ content: "Downloading skin..." });
-					if (skinUrl != "https://cdn.nethergames.org/skins/def463341f256af9656a2eebea910968/full.png") {
+					if (json["skinVisibility"]) {
 						const skinResponse = await fetch(skinUrl);
 						if (skinResponse.status === 200) {
 							const blob = await skinResponse.arrayBuffer();
@@ -951,6 +951,7 @@ module.exports = {
 					ephemeral: true,
 				});
 			} else {
+        console.error(error)
 				throw new Error(error);
 			}
 		}
