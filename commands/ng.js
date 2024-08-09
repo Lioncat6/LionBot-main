@@ -128,13 +128,13 @@ module.exports = {
         const t2 = Date.now()
         let description = ""
         let color = ""
-        if (t2-t1 <= 2500 ){
+        if (t2-t1 <= 1700 ){
           description = `${t2-t1}ms (fast)`
           color = 0x00ff00
-        } else if (t2-t1 > 2500){
+        } else if (t2-t1 > 1700){
           description = `${t2-t1}ms (normal)`
           color = 0xdaff00
-        } else if (t2-t1 > 4000){
+        } else if (t2-t1 > 3000){
           description = `${t2-t1}ms (slow)`
           color = 0xFFA700
         } else if (t2-t1 > 6000){
