@@ -506,8 +506,7 @@ module.exports = {
         if (json["discordInvite"]){
           embedFields.push({ name: "Discord Invite", value: `https://discord.gg/invite/${json["discordInvite"]}` });
         }
-        console.log(embedFields)
-				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
+				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setURL(`https://ngmc.co/g/${json["name"]}`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
 				await interaction.editReply({ embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
