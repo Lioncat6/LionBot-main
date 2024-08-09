@@ -134,13 +134,13 @@ module.exports = {
         } else if (t2-t1 > 1700){
           description = `${t2-t1}ms (normal)`
           color = 0xdaff00
-        } else if (t2-t1 > 3000){
+        } else if (t2-t1 > 2800){
           description = `${t2-t1}ms (slow)`
           color = 0xFFA700
-        } else if (t2-t1 > 6000){
+        } else if (t2-t1 > 5000){
           description = `${t2-t1}ms (really slow)`
           color = 0xFF2100
-        } else {
+        } else if (t2-t1 > 8000) {
           description = `${t2-t1}ms (💀 having a bad time...)`
           color = 0x000000
         }
