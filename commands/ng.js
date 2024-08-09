@@ -926,7 +926,7 @@ module.exports = {
 					await interaction.editReply({ embeds: [skinEmbed] });
 				}
 			} else {
-				await interaction.editReply({ content: "Coming soon...", ephemeral: true });
+				await interaction.editReply({ content: "Coming soon....", ephemeral: true });
 			}
 		} catch (error) {
 			if (String(error).includes("api error")) {
