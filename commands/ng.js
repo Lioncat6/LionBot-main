@@ -91,7 +91,8 @@ module.exports = {
 				.addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
 				.addStringOption((option) => option.setName("options").setDescription("For developmental purposes"))
 		)
-		.addSubcommand((subcommand) => subcommand.setName("online").setDescription("Fetch online player count")),
+		.addSubcommand((subcommand) => subcommand.setName("online").setDescription("Fetch online player count"))
+    .addSubcommand((subcommand) => subcommand.setName("ping").setDescription("Check NetherGames API latency")),
 	async execute(interaction) {
 		try {
 			await interaction.deferReply();
@@ -112,6 +113,41 @@ module.exports = {
 					.setColor(0xd79b4e)
 					.setTitle(`${json["players"]["online"]} Online Players`)
 					.setDescription(`There are ${json["players"]["online"]}/${json["players"]["max"]} players online`)
+					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
+				await interaction.editReply({ embeds: [onlineEmbed] });
+			} else if (interaction.options.getSubcommand() == "ping") {
+        const t1 = Date.now()
+				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response.ok) {
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
+				const json = await response.json();
+        const t2 = Date.now()
+        let description = ""
+        let color = ""
+        if (t2-t1 <= 2500 ){
+          description = `${t2-t1}ms (fast)`
+          color = 0x00ff00
+        } else if (t2-t1 > 2500){
+          description = `${t2-t1}ms (normal)`
+          color = 0xdaff00
+        } else if (t2-t1 > 4000){
+          description = `${t2-t1}ms (slow)`
+          color = 0xFFA700
+        } else if (t2-t1 > 6000){
+          description = `${t2-t1}ms (really slow)`
+          color = 0xFF2100
+        } else {
+          description = `${t2-t1}ms (💀 having a bad time...)`
+          color = 0x000000
+        }
+				const onlineEmbed = new EmbedBuilder()
+					.setColor(color)
+					.setTitle(`NetherGames API Latency`)
+					.setDescription(description)
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
