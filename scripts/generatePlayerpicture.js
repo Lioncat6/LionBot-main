@@ -563,10 +563,31 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		true
 	);
 	}
+	let kdrColor = "#ffffff"
+	let kdr = allKills / allDeaths
+	if (kdr <= 0.5){
+		kdrColor = "#555555"
+	} else if (kdr <= 1){
+		kdrColor = "#AAAAAA"
+	} else if (kdr <= 1.5){
+		kdrColor = "#ffffff"
+	} else if (kdr <= 2.5){
+		kdrColor = "#FFFF55"
+	} else if (kdr <= 3.2){
+		kdrColor = "#FFAA00"
+	} else if (kdr <= 4.5){
+		kdrColor = "#FF5555"
+	} else if (kdr <= 6){
+		kdrColor = "#AA0000"
+	} else if (kdr <= 10){
+		kdrColor = "#AA00AA"
+	} else{
+		kdrColor = "#5555FF"
+	}
 	bgImage = await drawText(bgImage, `${crateKeys}`, rightRowCenter + 5, statsBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${allKills}`, rightRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${allDeaths}`, rightRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, statsBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, statsBase + 60, 0.5, kdrColor, true, scaleBrightness(kdrColor, 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(allKills / allDeaths)}`, rightRowCenter + 5, statsBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, statsBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, statsBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
@@ -889,20 +910,40 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
 	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
 
-	let monthlyKDR = truncateToThreeDecimals(monthlyWins / monthlyLosses);
-	if (!monthlyKDR) {
-		monthlyKDR = 0;
-	}
-	let monthlyWLR = truncateToThreeDecimals(monthlyKills / monthlyDeaths);
+	let monthlyWLR = truncateToThreeDecimals(monthlyWins / monthlyLosses);
 	if (!monthlyWLR) {
 		monthlyWLR = 0;
 	}
+	let monthlyKDR = truncateToThreeDecimals(monthlyKills / monthlyDeaths);
+	if (!monthlyKDR) {
+		monthlyKDR = 0;
+	}
+	let mkdrColor = "#ffffff"
+	if (monthlyKDR <= 0.5){
+		mkdrColor = "#555555"
+	} else if (monthlyKDR <= 1){
+		mkdrColor = "#AAAAAA"
+	} else if (monthlyKDR <= 1.5){
+		mkdrColor = "#ffffff"
+	} else if (monthlyKDR <= 2.5){
+		mkdrColor = "#FFFF55"
+	} else if (monthlyKDR <= 3.2){
+		mkdrColor = "#FFAA00"
+	} else if (monthlyKDR <= 4.5){
+		mkdrColor = "#FF5555"
+	} else if (monthlyKDR <= 6){
+		mkdrColor = "#AA0000"
+	} else if (monthlyKDR <= 10){
+		mkdrColor = "#AA00AA"
+	} else{
+		mkdrColor = "#5555FF"
+	}
 	bgImage = await drawText(bgImage, `${monthlyWins}`, leftLeftRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${monthlyLosses}`, leftLeftRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${monthlyKills}`, leftLeftRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${monthlyDeaths}`, leftLeftRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, mkdrColor, true, scaleBrightness(mkdrColor, 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${monthlyCredits}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${monthlyXp}`, leftLeftRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	if (unbaked){
@@ -981,20 +1022,40 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 }
 	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
 	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
-	let weeklyKDR = truncateToThreeDecimals(weeklyWins / weeklyLosses);
-	if (!weeklyKDR) {
-		weeklyKDR = 0;
-	}
-	let weeklyWLR = truncateToThreeDecimals(weeklyKills / weeklyDeaths);
+	let weeklyWLR = truncateToThreeDecimals(weeklyWins / weeklyLosses);
 	if (!weeklyWLR) {
 		weeklyWLR = 0;
 	}
+	let weeklyKDR = truncateToThreeDecimals(weeklyKills / weeklyDeaths);
+	if (!weeklyKDR) {
+		weeklyKDR = 0;
+	}
+	let wkdrColor = "#ffffff"
+	if (weeklyKDR <= 0.5){
+		wkdrColor = "#555555"
+	} else if (weeklyKDR <= 1){
+		wkdrColor = "#AAAAAA"
+	} else if (weeklyKDR <= 1.5){
+		wkdrColor = "#ffffff"
+	} else if (weeklyKDR <= 2.5){
+		wkdrColor = "#FFFF55"
+	} else if (weeklyKDR <= 3.2){
+		wkdrColor = "#FFAA00"
+	} else if (weeklyKDR <= 4.5){
+		wkdrColor = "#FF5555"
+	} else if (weeklyKDR <= 6){
+		wkdrColor = "#AA0000"
+	} else if (weeklyKDR <= 10){
+		wkdrColor = "#AA00AA"
+	} else{
+		wkdrColor = "#5555FF"
+	}
 	bgImage = await drawText(bgImage, `${weeklyWins}`, leftRightRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${weeklyLosses}`, leftRightRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${weeklyKills}`, leftRightRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	bgImage = await drawText(bgImage, `${weeklyDeaths}`, leftRightRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 100, 0.5, wkdrColor, true, scaleBrightness(wkdrColor, 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${weeklyCredits}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 	//bgImage = await drawText(bgImage, `${weeklyXp}`, leftRightRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
 

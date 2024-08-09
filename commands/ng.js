@@ -153,11 +153,7 @@ module.exports = {
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
 				if (!playerPictureCooldowns.has(interaction.user.id)) {
 					const t1 = Date.now();
-          playerPictureCooldowns.add(interaction.user.id);
-					setTimeout(() => {
-						playerPictureCooldowns.delete(interaction.user.id);
-					}, 30000);
-					interaction.editReply({ content: "Fetching stats..." });
+					interaction.editReply({ content: "Fetching stats... (1/3)" });
 					const playername = interaction.options.getString("ign");
 					let options = interaction.options.getString("options");
 					let transparent = false;
@@ -185,6 +181,7 @@ module.exports = {
 					let json;
 					json = await response.json();
 					var skinUrl = json["skin"];
+          interaction.editReply({ content: "Fetching stats... (2/3)" });
 					const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -198,7 +195,7 @@ module.exports = {
 					}
 					let monthly;
 					monthly = await monthlyResponse.json();
-
+          interaction.editReply({ content: "Fetching stats... (3/3)" });
 					const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -211,7 +208,10 @@ module.exports = {
 					}
 					let weekly;
 					weekly = await weeklyResponse.json();
-
+          playerPictureCooldowns.add(interaction.user.id);
+					setTimeout(() => {
+						playerPictureCooldowns.delete(interaction.user.id);
+					}, 30000);
 					let playerPictureBuffer;
 					const t2 = Date.now();
 					let t3;
