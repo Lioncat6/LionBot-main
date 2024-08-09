@@ -209,6 +209,10 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	if (!guild) {
 		guild = "";
 	}
+
+	const banned = allTime["banned"]
+	const muted = allTime["muted"]
+
 	const playerName = allTime["name"];
 	const level = allTime["level"];
 	const levelColors = allTime["levelColors"];
@@ -1073,7 +1077,10 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
   bgImage = await drawText(bgImage, "dddddddd", 1, 150, 1.0, "#ffffff", false, "#000000", 4, true);
   bgImage = await drawText(bgImage, "Lioncat6", 1, 200, 2, "#00ff00", true, "#000000", 4, true);
   */
-	 
+	 if (banned){
+		let bannedImg = await Jimp.read("./assets/banned.png");
+		await bgImage.blit(bannedImg, 0, 0);
+	 }
 	//console.log(Date.now() - t1);
 	//bgImage.write(output);// save
 	const outputBuffer = await bgImage.getBufferAsync(Jimp.MIME_PNG);

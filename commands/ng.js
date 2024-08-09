@@ -27,6 +27,12 @@ module.exports = {
 				.setDescription("Fetch player stats")
 				.addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
 		)
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName("guild")
+				.setDescription("Fetch player stats")
+				.addStringOption((option) => option.setName("guild").setDescription("Name of the guild on the NetherGames server").setRequired(true))
+		)
 		.addSubcommandGroup((subcommand) =>
 			subcommand
 				.setName("roles")
@@ -92,7 +98,7 @@ module.exports = {
 				.addStringOption((option) => option.setName("options").setDescription("For developmental purposes"))
 		)
 		.addSubcommand((subcommand) => subcommand.setName("online").setDescription("Fetch online player count"))
-    .addSubcommand((subcommand) => subcommand.setName("ping").setDescription("Check NetherGames API latency")),
+		.addSubcommand((subcommand) => subcommand.setName("ping").setDescription("Check NetherGames API latency")),
 	async execute(interaction) {
 		try {
 			await interaction.deferReply();
@@ -116,7 +122,7 @@ module.exports = {
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "ping") {
-        const t1 = Date.now()
+				const t1 = Date.now();
 				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
 					method: "GET",
 					headers: fetchHeaders,
@@ -125,30 +131,26 @@ module.exports = {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
 				const json = await response.json();
-        const t2 = Date.now()
-        let description = ""
-        let color = ""
-        if (t2-t1 <= 1700 ){
-          description = `${t2-t1}ms (fast)`
-          color = 0x00ff00
-        } else if (t2-t1 > 1700){
-          description = `${t2-t1}ms (normal)`
-          color = 0xdaff00
-        } else if (t2-t1 > 2800){
-          description = `${t2-t1}ms (slow)`
-          color = 0xFFA700
-        } else if (t2-t1 > 5000){
-          description = `${t2-t1}ms (really slow)`
-          color = 0xFF2100
-        } else if (t2-t1 > 8000) {
-          description = `${t2-t1}ms (💀 having a bad time...)`
-          color = 0x000000
-        }
-				const onlineEmbed = new EmbedBuilder()
-					.setColor(color)
-					.setTitle(`NetherGames API Latency`)
-					.setDescription(description)
-					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
+				const t2 = Date.now();
+				let description = "";
+				let color = "";
+				if (t2 - t1 <= 1700) {
+					description = `${t2 - t1}ms (fast)`;
+					color = 0x00ff00;
+				} else if (t2 - t1 > 1700) {
+					description = `${t2 - t1}ms (normal)`;
+					color = 0xdaff00;
+				} else if (t2 - t1 > 2800) {
+					description = `${t2 - t1}ms (slow)`;
+					color = 0xffa700;
+				} else if (t2 - t1 > 5000) {
+					description = `${t2 - t1}ms (really slow)`;
+					color = 0xff2100;
+				} else if (t2 - t1 > 8000) {
+					description = `${t2 - t1}ms (💀 having a bad time...)`;
+					color = 0x000000;
+				}
+				const onlineEmbed = new EmbedBuilder().setColor(color).setTitle(`NetherGames API Latency`).setDescription(description).setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
 				if (!playerPictureCooldowns.has(interaction.user.id)) {
@@ -181,7 +183,7 @@ module.exports = {
 					let json;
 					json = await response.json();
 					var skinUrl = json["skin"];
-          interaction.editReply({ content: "Fetching stats... (2/3)" });
+					interaction.editReply({ content: "Fetching stats... (2/3)" });
 					const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -195,7 +197,7 @@ module.exports = {
 					}
 					let monthly;
 					monthly = await monthlyResponse.json();
-          interaction.editReply({ content: "Fetching stats... (3/3)" });
+					interaction.editReply({ content: "Fetching stats... (3/3)" });
 					const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -208,7 +210,7 @@ module.exports = {
 					}
 					let weekly;
 					weekly = await weeklyResponse.json();
-          playerPictureCooldowns.add(interaction.user.id);
+					playerPictureCooldowns.add(interaction.user.id);
 					setTimeout(() => {
 						playerPictureCooldowns.delete(interaction.user.id);
 					}, 30000);
@@ -277,12 +279,11 @@ module.exports = {
 						.setThumbnail(json["avatar"])
 						.setImage(`attachment://playerPicture.png`)
 						.setTimestamp(Date.now());
-					
+
 					await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
 				} else {
-					await interaction.editReply({ content: "Please wait 30 seconds before running this command again."});
-          setTimeout(() => interaction.deleteReply(), 10000);
-
+					await interaction.editReply({ content: "Please wait 30 seconds before running this command again." });
+					setTimeout(() => interaction.deleteReply(), 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
@@ -354,6 +355,159 @@ module.exports = {
 					)
 					.setThumbnail(json["avatar"])
 					.setTimestamp(Date.now());
+				await interaction.editReply({ embeds: [statsEmbed] });
+			} else if (interaction.options.getSubcommand() == "guild") {
+				const guildName = interaction.options.getString("guild");
+				const response = await fetch(`https://api.ngmc.co/v1/guilds/${guildName}?expand=true`, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response.ok) {
+					if (response.status == 404) {
+						throw new Error(`Player not found!`);
+					}
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
+				let json;
+				json = await response.json();
+				let position = json["position"];
+				if (position < 1 || !position) {
+					position = "Not Ranked";
+				}
+				let color = 0xd79b4e;
+				if (json["tagColor"]) {
+					color = parseInt(json["tagColor"].slice(1), 16);
+				}
+				let motd = json["motd"];
+				if (!json["motd"] || json["motd"] == "") {
+					motd = " - ";
+				}
+				let onlineCount = 0;
+				let membersString = "";
+				let leaderString = "";
+				let officerString = "";
+				if (json["leader"]) {
+					const leader = json["leader"];
+					let lUrl = `https://ngmc.co/p/${leader["name"]}`;
+					lUrl = lUrl.replace(/ /g, "%20");
+					if (leader["online"]) {
+						onlineCount = onlineCount + 1;
+						leaderString = `[${leader["name"]}](${lUrl}) 🟢`;
+					} else {
+						leaderString = `[${leader["name"]}](${lUrl}) 🔴`;
+					}
+				}
+				if (json["officers"]) {
+					for (const officer of json["officers"]) {
+						let oUrl = `https://ngmc.co/p/${officer["name"]}`;
+						oUrl = oUrl.replace(/ /g, "%20");
+						if (officer["online"]) {
+							onlineCount = onlineCount + 1;
+							officerString = officerString + `🟢 [${officer["name"]}](${oUrl})\n`;
+						} else {
+							officerString = officerString + `🔴 [${officer["name"]}](${oUrl})\n`;
+						}
+					}
+				}
+				if (json["members"]) {
+					for (const member of json["members"]) {
+						let mUrl = `https://ngmc.co/p/${member["name"]}`;
+						mUrl = mUrl.replace(/ /g, "%20");
+						if (member["online"]) {
+							onlineCount = onlineCount + 1;
+							membersString = membersString + `🟢 [${member["name"]}](${mUrl})\n`;
+						} else {
+							membersString = membersString + `🔴 [${member["name"]}](${mUrl})\n`;
+						}
+					}
+				}
+        let lString = leaderString
+        let oString = officerString
+        let mString = membersString
+        if (!lString || lString == ""){
+          lString = "None"
+        }
+        if (!oString || oString == ""){
+          oString = "None"
+        }
+        if (!mString || mString == ""){
+          mString = "None"
+        }
+				let embedFields = [
+					{
+						name: "Level",
+						value: `${json["level"]} (${json["xpToNextLevel"]} xp to ${json["level"] + 1})`,
+					},
+					{
+						name: "Xp",
+						value: `${json["xp"]}`,
+            inline:true
+					},
+					{
+						name: "Leader",
+						value: `${lString}`,
+						inline: true,
+					},
+					{
+						name: "Member Count",
+						value: `${json["memberCount"]} / ${json["maxSize"]}`,
+            inline:true
+					},
+          {
+						name: "Online Count",
+						value: `${onlineCount} / ${json["memberCount"]}`,
+            inline:true
+					},
+          {
+						name: "Leaderboard position",
+						value: `${position}`,
+            inline:true
+					},
+					
+					{
+						name: "Officers",
+						value: `${oString}`,
+
+					},
+				];
+				function splitFields(rolesList) {
+					const maxChunkLength = 1024;
+					const textList = rolesList.split(/\n+/); // Split by whitespace
+					let currentChunk = "";
+					const chunks = [];
+					for (const text of textList) {
+						if (currentChunk.length + text.length + 1 <= maxChunkLength) {
+							// Add the mention to the current chunk
+							currentChunk += `${text}\n`;
+						} else {
+							// Start a new chunk
+							chunks.push(currentChunk.trim());
+							currentChunk = text+"\n";
+						}
+					}
+					// Add the last chunk
+					if (currentChunk) {
+						chunks.push(currentChunk.trim());
+					}
+					return chunks;
+				}
+				const membersStrings = splitFields(mString);
+				for (x in membersStrings) {
+					let currentField = membersStrings[x];
+					if (x == 0) {
+						embedFields.push({ name: "Members", value: currentField, inline:true });
+					} else {
+						embedFields.push({ name: "---", value: currentField, inline:true });
+					}
+				}
+        if (json["autoKickDays"]){
+          embedFields.push({ name: "AutoKick", value: `Auto kick after ${json["autoKickDays"]} days` });
+        }
+        if (json["discordInvite"]){
+          embedFields.push({ name: "Discord Invite", value: `https://discord.gg/invite/${json["discordInvite"]}` });
+        }
+        console.log(embedFields)
+				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
 				await interaction.editReply({ embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
@@ -926,7 +1080,7 @@ module.exports = {
 					await interaction.editReply({ embeds: [skinEmbed] });
 				}
 			} else {
-				await interaction.editReply({ content: "Coming soon....", ephemeral: true });
+				await interaction.editReply({ content: `Coming soon...`, ephemeral: true });
 			}
 		} catch (error) {
 			if (String(error).includes("api error")) {
@@ -951,7 +1105,7 @@ module.exports = {
 					ephemeral: true,
 				});
 			} else {
-        console.error(error)
+				console.error(error);
 				throw new Error(error);
 			}
 		}
