@@ -364,7 +364,7 @@ module.exports = {
 				});
 				if (!response.ok) {
 					if (response.status == 404) {
-						throw new Error(`Player not found!`);
+						throw new Error(`Guild not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
@@ -517,7 +517,7 @@ module.exports = {
 				});
 				if (!response.ok) {
 					if (response.status == 404) {
-						throw new Error(`Guild not found!`);
+						throw new Error(`Player not found!`);
 					}
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
