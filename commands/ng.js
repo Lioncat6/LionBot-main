@@ -392,7 +392,11 @@ module.exports = {
 					lUrl = lUrl.replace(/ /g, "%20");
 					if (leader["online"]) {
 						onlineCount = onlineCount + 1;
-						leaderString = `[${leader["name"]}](${lUrl}) 🟢`;
+            let locationString = "Location Hidden"
+              if (leader["lastServerParsed"]){
+                locationString = leader["lastServerParsed"]["pretty"]
+              }
+						leaderString = `[${leader["name"]}](${lUrl}) 🟢\n[**${locationString}**]`;
 					} else {
 						leaderString = `[${leader["name"]}](${lUrl}) 🔴`;
 					}
@@ -403,7 +407,11 @@ module.exports = {
 						oUrl = oUrl.replace(/ /g, "%20");
 						if (officer["online"]) {
 							onlineCount = onlineCount + 1;
-							officerString = officerString + `🟢 [${officer["name"]}](${oUrl})\n`;
+              let locationString = "Location Hidden"
+              if (officer["lastServerParsed"]){
+                locationString = officer["lastServerParsed"]["pretty"]
+              }
+							officerString = officerString + `🟢 [${officer["name"]}](${oUrl}) [**${locationString}**]\n`;
 						} else {
 							officerString = officerString + `🔴 [${officer["name"]}](${oUrl})\n`;
 						}
@@ -415,7 +423,11 @@ module.exports = {
 						mUrl = mUrl.replace(/ /g, "%20");
 						if (member["online"]) {
 							onlineCount = onlineCount + 1;
-							membersString = membersString + `🟢 [${member["name"]}](${mUrl})\n`;
+              let locationString = "Location Hidden"
+              if (member["lastServerParsed"]){
+                locationString = member["lastServerParsed"]["pretty"]
+              }
+							membersString = membersString + `🟢 [${member["name"]}](${mUrl}) [**${locationString}**]\n`;
 						} else {
 							membersString = membersString + `🔴 [${member["name"]}](${mUrl})\n`;
 						}
