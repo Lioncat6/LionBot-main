@@ -622,9 +622,22 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
   bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Diamonds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
   bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Emeralds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
   bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-  */
- /*
+
   bgImage = await drawText(bgImage, "Skywars", imgWidth / 2 + 350, gStatsBase, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+120, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+
+  bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Coins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Placed", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Broken", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Pearls", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+  bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["Eggs", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+
+    bgImage = await drawText(bgImage, "Skywars", imgWidth / 2 + 350, gStatsBase, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
   bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
   bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
   bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);

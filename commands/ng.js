@@ -1129,7 +1129,7 @@ module.exports = {
 
 						const file = new AttachmentBuilder(Buffer.from(await downloadSkin(fullSkinUrl)));
 						file.name = `${json["name"]}.png`;
-						const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setImage(`attachment://${json["name"]}.png`).setTimestamp(Date.now());
+						const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setImage(`attachment://${json["name"].replace(/ /g, "%20")}.png`).setTimestamp(Date.now());
 						await interaction.editReply({ embeds: [skinEmbed], files: [file] });
 					} else {
 						throw new Error(`NetherGames API error: ${skinResponse.status}`);
