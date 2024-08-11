@@ -340,6 +340,15 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	bgImage = await drawText(bgImage, `${(new Date(Date.now()).toLocaleString())}`, imgWidth-5, 5, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false, true);
 	if (unbaked){bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight-20, .5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);}
 	bgImage = await drawText(bgImage, `${playerName}`, imgWidth / 2, 50, 2, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	if (tier){
+		var mFont = await Jimp.loadFont(mjBold);
+		let tierPosition = Jimp.measureText(mFont, `${playerName}`) + (imgWidth / 2)+5;
+		let tierPNG = await Jimp.read(`./assets/${tier.toLowerCase()}.png`);
+		tierPNG.scale(.5, Jimp.RESIZE_NEAREST_NEIGHBOR)
+		bgImage.blit(tierPNG, tierPosition, 50);
+	}
+	
+	
 	bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
 	if (levelColors.length > 1) {
 		const digits = Array.from(String(level), Number);

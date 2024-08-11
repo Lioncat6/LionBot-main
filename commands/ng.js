@@ -121,7 +121,21 @@ module.exports = {
 					.setDescription(`There are ${json["players"]["online"]}/${json["players"]["max"]} players online`)
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
-			} else if (interaction.options.getSubcommand() == "ping") {
+			} else if (interaction.options.getSubcommand() == "settingsa") {
+        if (interaction.user.has(PermissionsBitField.Flags.ManageRoles )){
+          
+        } else {
+          const noPermsEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`You are missing the required permission: \`Manage Roles\` ❌`);
+          await interaction.editReply({
+            content: "",
+            embeds: [noPermsEmbed],
+            ephemeral: true,
+          });
+          setTimeout(() => interaction.deleteReply(), 10000);
+
+        }
+      } else if (interaction.options.getSubcommand() == "ping") {
+        await interaction.editReply({ content:"Pinging endpoint 1/5... (`/servers/ping`)" });
 				const t1 = Date.now();
 				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
 					method: "GET",
@@ -130,8 +144,33 @@ module.exports = {
 				if (!response.ok) {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-				const json = await response.json();
 				const t2 = Date.now();
+        await interaction.editReply({ content:"Pinging endpoint 2/5... (`/players`)" });
+        const response2 = await fetch("https://api.ngmc.co/v1/players/Lioncat6", {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response2.ok) {
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
+        const t3 = Date.now();
+        await interaction.editReply({ content:"Pinging endpoint 3/5... (`/guilds`)" });
+        const response3 = await fetch("https://api.ngmc.co/v1/guilds/cosmic", {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response3.ok) {
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
+        const t4 = Date.now();
+        await interaction.editReply({ content:"Pinging endpoint 4/5... (`/players/*?period=monthly`)" });
+        const response4 = await fetch("https://api.ngmc.co/v1/players/Lioncat6?period=monthly", {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response4.ok) {
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
 				let description = "";
 				let color = "";
 				if (t2 - t1 <= 1700) {
@@ -1101,6 +1140,7 @@ module.exports = {
 					embeds: [ngErrEmbed],
 					ephemeral: true,
 				});
+        setTimeout(() => interaction.deleteReply(), 10000);
 			} else if (String(error).includes("not found")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
 				await interaction.editReply({
@@ -1108,6 +1148,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
+        setTimeout(() => interaction.deleteReply(), 10000);
 			} else if (String(error).includes("factions data")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player has no factions data ❌`);
 				await interaction.editReply({
@@ -1115,6 +1156,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
+        setTimeout(() => interaction.deleteReply(), 10000);
 			} else {
 				console.error(error);
 				throw new Error(error);
