@@ -574,6 +574,7 @@ module.exports = {
 				let embedFields = [];
 				let friendlyGameName = "";
 				let footer = "";
+				let thumbnail = ""
 				function findGameKey(gameList, targetKey) {
 					for (const game of gameList) {
 						if (game.gameKey === targetKey) {
@@ -590,6 +591,7 @@ module.exports = {
 					};
 				}
 				if (gameMode == "bedwars") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/bedwars.png"
 					friendlyGameName = "Bedwars";
 					const bedsBroken = json["extraNested"]["bw"]["beds"]["broken"];
 					const deaths = json["extraNested"]["bw"]["deaths"];
@@ -674,6 +676,7 @@ module.exports = {
 						}`,
 					});
 				} else if (gameMode == "skywars") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/skywars.png"
 					friendlyGameName = "Skywars";
 					const blocksBroken = json["extraNested"]["sw"]["blocks"]["broken"];
 					const blocksPlaced = json["extraNested"]["sw"]["blocks"]["placed"];
@@ -732,6 +735,7 @@ module.exports = {
 					});
 					embedFields.push({ name: "__Other__:", value: `__1v1 Streak__: ${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}\n__2v2 Streak__: ${sw2v2Streaks["current"]} / ${sw2v2Streaks["best"]}` });
 				} else if (gameMode == "survivalGames") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/survivalGames.png"
 					friendlyGameName = "Survival Games";
 					const kills = json["extraNested"]["sg"]["kills"];
 					const deaths = json["extraNested"]["sg"]["deaths"];
@@ -743,6 +747,7 @@ module.exports = {
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Win Streak", value: `${sgStreaks["current"]} / ${sgStreaks["best"]}` });
 				} else if (gameMode == "duels") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/duels.png"
 					friendlyGameName = "Duels";
 					const kills = json["extraNested"]["duels"]["kills"];
 					const deaths = json["extraNested"]["duels"]["deaths"];
@@ -759,6 +764,7 @@ module.exports = {
 					embedFields.push({ name: "Solo Streak", value: `${duelsSoloStreak["current"]} / ${duelsSoloStreak["best"]}` });
 					embedFields.push({ name: "Doubles Streak", value: `${duelsDoubleStreak["current"]} / ${duelsDoubleStreak["best"]}` });
 				} else if (gameMode == "bridge") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/theBridge.png"
 					friendlyGameName = "The Bridge";
 					const deaths = json["extraNested"]["tb"]["deaths"];
 					const wins = json["extraNested"]["tb"]["wins"];
@@ -781,6 +787,7 @@ module.exports = {
 					embedFields.push({ name: "__Solo__:", value: `**Kills:** ${soloKills}\n**Wins:** ${soloWins}\n**Goals:** ${soloGoals}\n__Win Streak__: ${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}` });
 					embedFields.push({ name: "__Doubles__:", value: `**Kills:** ${doublesKills}\n**Wins:** ${doublesWins}\n**Goals:** ${doublesGoals}\n__Win Streak__: ${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}` });
 				} else if (gameMode == "murderMystery") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/murderMystery.png"
 					friendlyGameName = "Murder Mystery";
 					const classicDeaths = json["extraNested"]["mm"]["classic"]["deaths"];
 					const classicKills = json["extraNested"]["mm"]["classic"]["kills"];
@@ -810,6 +817,7 @@ module.exports = {
 						value: `**Kills:** ${infectionKills}\n**Deaths:** ${infectionDeaths}\n**K/DR:** ${infectionKills / infectionDeaths}\n**Wins:** ${infectionWins}\n__Win Streak__: ${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`,
 					});
 				} else if (gameMode == "conquests") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/conquests.png"
 					friendlyGameName = "Conquests";
 					const deaths = json["extraNested"]["cq"]["deaths"];
 					const diamondsCollected = json["extraNested"]["cq"]["diamonds"]["collected"];
@@ -833,6 +841,7 @@ module.exports = {
 					embedFields.push({ name: "Diamonds Collected", value: `${diamondsCollected}` });
 					embedFields.push({ name: "Emeralds Collected", value: `${emeraldsCollected}` });
 				} else if (gameMode == "factions") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/factions.png"
 					console.log(json["factionData"]);
 					if (json["factionData"]) {
 						footer = "For more faction data use /ng faction <faction>";
@@ -868,6 +877,7 @@ module.exports = {
 						throw new Error("Player has no factions data!");
 					}
 				} else if (gameMode == "UHC") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/uhc.png"
 					friendlyGameName = "UHC";
 					const deaths = json["extraNested"]["uhc"]["deaths"];
 					const diamondsMined = json["extraNested"]["uhc"]["diamond"]["mined"];
@@ -885,12 +895,14 @@ module.exports = {
 					embedFields.push({ name: "Lapis Mined", value: `${lapisMined}` });
 					embedFields.push({ name: "Diamonds Mined", value: `${diamondsMined}` });
 				} else if (gameMode == "soccer") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png"
 					friendlyGameName = "Soccer";
 					const goals = json["extraNested"]["sc"]["goals"];
 					const wins = json["extraNested"]["sc"]["wins"];
 					embedFields.push({ name: "Goals", value: `${goals}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 				} else if (gameMode == "mommaSays") {
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png"
 					friendlyGameName = "Momma Says";
 					const fails = json["extraNested"]["ms"]["fails"];
 					const successes = json["extraNested"]["ms"]["successes"];
@@ -906,7 +918,7 @@ module.exports = {
 						.setTitle(`${json["name"]}'s ${friendlyGameName} Stats`)
 						//.setDescription(json["bio"])
 						.addFields(embedFields)
-						.setThumbnail(json["avatar"])
+						.setThumbnail(thumbnail)
 						.setTimestamp(Date.now())
 						.setFooter({
 							text: `${footer}`,
@@ -918,7 +930,7 @@ module.exports = {
 						.setTitle(`${json["name"]}'s ${friendlyGameName} Stats`)
 						//.setDescription(json["bio"])
 						.addFields(embedFields)
-						.setThumbnail(json["avatar"])
+						.setThumbnail(thumbnail)
 						.setTimestamp(Date.now());
 					await interaction.editReply({ embeds: [statsEmbed] });
 				}
