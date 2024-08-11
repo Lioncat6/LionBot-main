@@ -122,20 +122,18 @@ module.exports = {
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "settingsa") {
-        if (interaction.user.has(PermissionsBitField.Flags.ManageRoles )){
-          
-        } else {
-          const noPermsEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`You are missing the required permission: \`Manage Roles\` ❌`);
-          await interaction.editReply({
-            content: "",
-            embeds: [noPermsEmbed],
-            ephemeral: true,
-          });
-          setTimeout(() => interaction.deleteReply(), 10000);
-
-        }
-      } else if (interaction.options.getSubcommand() == "ping") {
-        await interaction.editReply({ content:"Pinging endpoint 1/5... (`/servers/ping`)" });
+				if (interaction.user.has(PermissionsBitField.Flags.ManageRoles)) {
+				} else {
+					const noPermsEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`You are missing the required permission: \`Manage Roles\` ❌`);
+					await interaction.editReply({
+						content: "",
+						embeds: [noPermsEmbed],
+						ephemeral: true,
+					});
+					setTimeout(() => interaction.deleteReply(), 10000);
+				}
+			} else if (interaction.options.getSubcommand() == "ping") {
+				await interaction.editReply({ content: "Pinging endpoint 1/5... (`/servers/ping`)" });
 				const t1 = Date.now();
 				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
 					method: "GET",
@@ -145,26 +143,26 @@ module.exports = {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
 				const t2 = Date.now();
-        await interaction.editReply({ content:"Pinging endpoint 2/5... (`/players`)" });
-        const response2 = await fetch("https://api.ngmc.co/v1/players/Lioncat6", {
+				await interaction.editReply({ content: "Pinging endpoint 2/5... (`/players`)" });
+				const response2 = await fetch("https://api.ngmc.co/v1/players/Lioncat6", {
 					method: "GET",
 					headers: fetchHeaders,
 				});
 				if (!response2.ok) {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-        const t3 = Date.now();
-        await interaction.editReply({ content:"Pinging endpoint 3/5... (`/guilds`)" });
-        const response3 = await fetch("https://api.ngmc.co/v1/guilds/cosmic", {
+				const t3 = Date.now();
+				await interaction.editReply({ content: "Pinging endpoint 3/5... (`/guilds`)" });
+				const response3 = await fetch("https://api.ngmc.co/v1/guilds/cosmic", {
 					method: "GET",
 					headers: fetchHeaders,
 				});
 				if (!response3.ok) {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
-        const t4 = Date.now();
-        await interaction.editReply({ content:"Pinging endpoint 4/5... (`/players/*?period=monthly`)" });
-        const response4 = await fetch("https://api.ngmc.co/v1/players/Lioncat6?period=monthly", {
+				const t4 = Date.now();
+				await interaction.editReply({ content: "Pinging endpoint 4/5... (`/players/*?period=monthly`)" });
+				const response4 = await fetch("https://api.ngmc.co/v1/players/Lioncat6?period=monthly", {
 					method: "GET",
 					headers: fetchHeaders,
 				});
@@ -431,10 +429,10 @@ module.exports = {
 					lUrl = lUrl.replace(/ /g, "%20");
 					if (leader["online"]) {
 						onlineCount = onlineCount + 1;
-            let locationString = "Location Hidden"
-              if (leader["lastServerParsed"]){
-                locationString = leader["lastServerParsed"]["pretty"]
-              }
+						let locationString = "Location Hidden";
+						if (leader["lastServerParsed"]) {
+							locationString = leader["lastServerParsed"]["pretty"];
+						}
 						leaderString = `[${leader["name"]}](${lUrl}) 🟢\n[**${locationString}**]`;
 					} else {
 						leaderString = `[${leader["name"]}](${lUrl}) 🔴`;
@@ -446,10 +444,10 @@ module.exports = {
 						oUrl = oUrl.replace(/ /g, "%20");
 						if (officer["online"]) {
 							onlineCount = onlineCount + 1;
-              let locationString = "Location Hidden"
-              if (officer["lastServerParsed"]){
-                locationString = officer["lastServerParsed"]["pretty"]
-              }
+							let locationString = "Location Hidden";
+							if (officer["lastServerParsed"]) {
+								locationString = officer["lastServerParsed"]["pretty"];
+							}
 							officerString = officerString + `🟢 [${officer["name"]}](${oUrl}) [**${locationString}**]\n`;
 						} else {
 							officerString = officerString + `🔴 [${officer["name"]}](${oUrl})\n`;
@@ -462,28 +460,28 @@ module.exports = {
 						mUrl = mUrl.replace(/ /g, "%20");
 						if (member["online"]) {
 							onlineCount = onlineCount + 1;
-              let locationString = "Location Hidden"
-              if (member["lastServerParsed"]){
-                locationString = member["lastServerParsed"]["pretty"]
-              }
+							let locationString = "Location Hidden";
+							if (member["lastServerParsed"]) {
+								locationString = member["lastServerParsed"]["pretty"];
+							}
 							membersString = membersString + `🟢 [${member["name"]}](${mUrl}) [**${locationString}**]\n`;
 						} else {
 							membersString = membersString + `🔴 [${member["name"]}](${mUrl})\n`;
 						}
 					}
 				}
-        let lString = leaderString
-        let oString = officerString
-        let mString = membersString
-        if (!lString || lString == ""){
-          lString = "None"
-        }
-        if (!oString || oString == ""){
-          oString = "None"
-        }
-        if (!mString || mString == ""){
-          mString = "None"
-        }
+				let lString = leaderString;
+				let oString = officerString;
+				let mString = membersString;
+				if (!lString || lString == "") {
+					lString = "None";
+				}
+				if (!oString || oString == "") {
+					oString = "None";
+				}
+				if (!mString || mString == "") {
+					mString = "None";
+				}
 				let embedFields = [
 					{
 						name: "Level",
@@ -492,7 +490,7 @@ module.exports = {
 					{
 						name: "Xp",
 						value: `${json["xp"]}`,
-            inline:true
+						inline: true,
 					},
 					{
 						name: "Leader",
@@ -502,23 +500,22 @@ module.exports = {
 					{
 						name: "Member Count",
 						value: `${json["memberCount"]} / ${json["maxSize"]}`,
-            inline:true
+						inline: true,
 					},
-          {
+					{
 						name: "Online Count",
 						value: `${onlineCount} / ${json["memberCount"]}`,
-            inline:true
+						inline: true,
 					},
-          {
+					{
 						name: "Leaderboard position",
 						value: `${position}`,
-            inline:true
+						inline: true,
 					},
-					
+
 					{
 						name: "Officers",
 						value: `${oString}`,
-
 					},
 				];
 				function splitFields(rolesList) {
@@ -533,7 +530,7 @@ module.exports = {
 						} else {
 							// Start a new chunk
 							chunks.push(currentChunk.trim());
-							currentChunk = text+"\n";
+							currentChunk = text + "\n";
 						}
 					}
 					// Add the last chunk
@@ -546,18 +543,18 @@ module.exports = {
 				for (x in membersStrings) {
 					let currentField = membersStrings[x];
 					if (x == 0) {
-						embedFields.push({ name: "Members", value: currentField, inline:true });
+						embedFields.push({ name: "Members", value: currentField, inline: true });
 					} else {
-						embedFields.push({ name: "---", value: currentField, inline:true });
+						embedFields.push({ name: "---", value: currentField, inline: true });
 					}
 				}
-        if (json["autoKickDays"]){
-          embedFields.push({ name: "AutoKick", value: `Auto kick after ${json["autoKickDays"]} days` });
-        }
-        if (json["discordInvite"]){
-          embedFields.push({ name: "Discord Invite", value: `https://discord.gg/invite/${json["discordInvite"]}` });
-        }
-				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setURL(`https://ngmc.co/g/${json["name"]}`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
+				if (json["autoKickDays"]) {
+					embedFields.push({ name: "AutoKick", value: `Auto kick after ${json["autoKickDays"]} days` });
+				}
+				if (json["discordInvite"]) {
+					embedFields.push({ name: "Discord Invite", value: `https://discord.gg/invite/${json["discordInvite"]}` });
+				}
+				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setURL(`https://ngmc.co/g/${json["name"].replace(/ /g, "%20")}`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
 				await interaction.editReply({ embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
@@ -1140,7 +1137,7 @@ module.exports = {
 					embeds: [ngErrEmbed],
 					ephemeral: true,
 				});
-        setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(() => interaction.deleteReply(), 10000);
 			} else if (String(error).includes("not found")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
 				await interaction.editReply({
@@ -1148,7 +1145,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-        setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(() => interaction.deleteReply(), 10000);
 			} else if (String(error).includes("factions data")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player has no factions data ❌`);
 				await interaction.editReply({
@@ -1156,7 +1153,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-        setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(() => interaction.deleteReply(), 10000);
 			} else {
 				console.error(error);
 				throw new Error(error);
