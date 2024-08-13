@@ -100,6 +100,9 @@ module.exports = {
 		.addSubcommand((subcommand) => subcommand.setName("online").setDescription("Fetch online player count"))
 		.addSubcommand((subcommand) => subcommand.setName("ping").setDescription("Check NetherGames API latency")),
 	async execute(interaction) {
+		function truncateToThreeDecimals(number) {
+			return Math.trunc(number * 1000) / 1000;
+		}
 		try {
 			await interaction.deferReply();
 		} catch (error) {
@@ -375,7 +378,7 @@ module.exports = {
 						},
 						{
 							name: "W/LR",
-							value: `${json["wins"] / json["losses"]}`,
+							value: `${truncateToThreeDecimals(json["wins"] / json["losses"])}`,
 						},
 						{
 							name: "Credits",
@@ -640,38 +643,44 @@ module.exports = {
 					const bw2v2Streaks = findGameKey(json["winStreaks"], "bw_2v2");
 
 					embedFields.push({
+						inline:true,
 						name: "__Overall__:",
 						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**Final Kills:** ${finalKills}\n**K/DR:** ${
-							kills / deaths
+							truncateToThreeDecimals(kills / deaths)
 						}\n**Wins:** ${wins}\n**Beds Broken:** ${bedsBroken}\nIron Collected: ${ironCollected}\nGold Collected: ${goldCollected}\nDiamonds Collected: ${diamondsCollected}\nEmeralds Collected: ${emeraldsCollected}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Solo__:",
-						value: `**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**Final Kills:** ${soloFinalKills}\n**K/DR:** ${soloKills / soloDeaths}\n**Wins:** ${soloWins}\n**Beds Broken:** ${soloBedsBroken}\n__Win Streak__: ${
+						value: `**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**Final Kills:** ${soloFinalKills}\n**K/DR:** ${truncateToThreeDecimals(soloKills / soloDeaths)}\n**Wins:** ${soloWins}\n**Beds Broken:** ${soloBedsBroken}\n__Win Streak__: ${
 							bwSoloStreaks["current"]
 						} / ${bwSoloStreaks["best"]}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Doubles__:",
-						value: `**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**Final Kills:** ${doublesFinalKills}\n**K/DR:** ${doublesKills / doublesDeaths}\n**Wins:** ${doublesWins}\n**Beds Broken:** ${doublesBedsBroken}\n__Win Streak__: ${
+						value: `**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**Final Kills:** ${doublesFinalKills}\n**K/DR:** ${truncateToThreeDecimals(doublesKills / doublesDeaths)}\n**Wins:** ${doublesWins}\n**Beds Broken:** ${doublesBedsBroken}\n__Win Streak__: ${
 							bwDoublesStreaks["current"]
 						} / ${bwDoublesStreaks["best"]}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Squads__:",
-						value: `**Kills:** ${squadsKills}\n**Deaths:** ${squadsDeaths}\n**Final Kills:** ${squadsFinalKills}\n**K/DR:** ${squadsKills / squadsDeaths}\n**Wins:** ${squadsWins}\n**Beds Broken:** ${squadsBedsBroken}\n__Win Streak__: ${
+						value: `**Kills:** ${squadsKills}\n**Deaths:** ${squadsDeaths}\n**Final Kills:** ${squadsFinalKills}\n**K/DR:** ${truncateToThreeDecimals(squadsKills / squadsDeaths)}\n**Wins:** ${squadsWins}\n**Beds Broken:** ${squadsBedsBroken}\n__Win Streak__: ${
 							bwSquadStreaks["current"]
 						} / ${bwSquadStreaks["best"]}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__1v1__:",
-						value: `**Kills:** ${kills1v1}\n**Deaths:** ${deaths1v1}\n**Final Kills:** ${finalKills1v1}\n**K/DR:** ${kills1v1 / deaths1v1}\n**Wins:** ${wins1v1}\n**Beds Broken:** ${bedsBroken1v1}\n__Win Streak__: ${bw1v1Streaks["current"]} / ${
+						value: `**Kills:** ${kills1v1}\n**Deaths:** ${deaths1v1}\n**Final Kills:** ${finalKills1v1}\n**K/DR:** ${truncateToThreeDecimals(kills1v1 / deaths1v1)}\n**Wins:** ${wins1v1}\n**Beds Broken:** ${bedsBroken1v1}\n__Win Streak__: ${bw1v1Streaks["current"]} / ${
 							bw1v1Streaks["best"]
 						}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__2v2__:",
-						value: `**Kills:** ${kills2v2}\n**Deaths:** ${deaths2v2}\n**Final Kills:** ${finalKills2v2}\n**K/DR:** ${kills2v2 / deaths2v2}\n**Wins:** ${wins2v2}\n**Beds Broken:** ${bedsBroken2v2}\n__Win Streak__: ${bw2v2Streaks["current"]} / ${
+						value: `**Kills:** ${kills2v2}\n**Deaths:** ${deaths2v2}\n**Final Kills:** ${finalKills2v2}\n**K/DR:** ${truncateToThreeDecimals(kills2v2 / deaths2v2)}\n**Wins:** ${wins2v2}\n**Beds Broken:** ${bedsBroken2v2}\n__Win Streak__: ${bw2v2Streaks["current"]} / ${
 							bw2v2Streaks["best"]
 						}`,
 					});
@@ -712,26 +721,29 @@ module.exports = {
 					const sw2v2Streaks = findGameKey(json["winStreaks"], "sw_2v2");
 
 					embedFields.push({
+						inline:true,
 						name: "__Overall__:",
-						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${kills / deaths}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${
-							wins / losses
+						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${
+							truncateToThreeDecimals(wins / losses)
 						}\n**Coins:** ${coins}\nBlocks Placed: ${blocksPlaced}\nBlocks Broken: ${blocksBroken}\nEnder Pearls Thrown: ${enderPearlsThrown}\nEggs Thrown: ${eggsThrown}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Solo__:",
-						value: `*__Overall__*:\n**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**K/DR:** ${soloKills / soloDeaths}\n**Wins:** ${soloWins}\n**Losses:** ${soloLosses}\n**W/LR:** ${
-							soloWins / soloLosses
-						}\n*__Normal__*:\n**Kills:** ${soloNormalKills}\n**Deaths:** ${soloNormalDeaths}\n**K/DR:** ${soloNormalKills / soloNormalDeaths}\n*__Insane__*:\n**Kills:** ${soloInsaneKills}\n**Deaths:** ${soloInsaneDeaths}\n**K/DR:** ${
-							soloInsaneKills / soloInsaneDeaths
+						value: `*__Overall__*:\n**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloKills / soloDeaths)}\n**Wins:** ${soloWins}\n**Losses:** ${soloLosses}\n**W/LR:** ${
+							truncateToThreeDecimals(soloWins / soloLosses)
+						}\n*__Normal__*:\n**Kills:** ${soloNormalKills}\n**Deaths:** ${soloNormalDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloNormalKills / soloNormalDeaths)}\n*__Insane__*:\n**Kills:** ${soloInsaneKills}\n**Deaths:** ${soloInsaneDeaths}\n**K/DR:** ${
+							truncateToThreeDecimals(soloInsaneKills / soloInsaneDeaths)
 						}\n__Win Streak__: ${swSoloStreaks["current"]} / ${swSoloStreaks["best"]}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Doubles__:",
-						value: `*__Overall__*:\n**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**K/DR:** ${doublesKills / doublesDeaths}\n**Wins:** ${doublesWins}\n**Losses:** ${doublesLosses}\n**W/LR:** ${
+						value: `*__Overall__*:\n**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**K/DR:** ${truncateToThreeDecimals(doublesKills / doublesDeaths)}\n**Wins:** ${doublesWins}\n**Losses:** ${doublesLosses}\n**W/LR:** ${
 							doublesWins / doublesLosses
 						}\n*__Normal__*:\n**Kills:** ${doublesNormalKills}\n**Deaths:** ${doublesNormalDeaths}\n**K/DR:** ${
-							doublesNormalKills / doublesNormalDeaths
-						}\n*__Insane__*:\n**Kills:** ${doublesInsaneKills}\n**Deaths:** ${doublesInsaneDeaths}\n**K/DR:** ${doublesInsaneKills / doublesInsaneDeaths}\n__Win Streak__: ${swDoublesStreaks["current"]} / ${swDoublesStreaks["best"]}`,
+							truncateToThreeDecimals(doublesNormalKills / doublesNormalDeaths)
+						}\n*__Insane__*:\n**Kills:** ${doublesInsaneKills}\n**Deaths:** ${doublesInsaneDeaths}\n**K/DR:** ${truncateToThreeDecimals(doublesInsaneKills / doublesInsaneDeaths)}\n__Win Streak__: ${swDoublesStreaks["current"]} / ${swDoublesStreaks["best"]}`,
 					});
 					embedFields.push({ name: "__Other__:", value: `__1v1 Streak__: ${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}\n__2v2 Streak__: ${sw2v2Streaks["current"]} / ${sw2v2Streaks["best"]}` });
 				} else if (gameMode == "survivalGames") {
@@ -743,7 +755,7 @@ module.exports = {
 					const sgStreaks = findGameKey(json["winStreaks"], "sg_solo");
 					embedFields.push({ name: "Kills", value: `${kills}` });
 					embedFields.push({ name: "Deaths", value: `${deaths}` });
-					embedFields.push({ name: "K/DR", value: `${kills / deaths}` });
+					embedFields.push({ name: "K/DR", value: `${truncateToThreeDecimals(kills / deaths)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Win Streak", value: `${sgStreaks["current"]} / ${sgStreaks["best"]}` });
 				} else if (gameMode == "duels") {
@@ -757,10 +769,10 @@ module.exports = {
 					const duelsDoubleStreak = findGameKey(json["winStreaks"], "duels_doubles");
 					embedFields.push({ name: "Kills", value: `${kills}` });
 					embedFields.push({ name: "Deaths", value: `${deaths}` });
-					embedFields.push({ name: "K/DR", value: `${kills / deaths}` });
+					embedFields.push({ name: "K/DR", value: `${truncateToThreeDecimals(kills / deaths)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Losses", value: `${losses}` });
-					embedFields.push({ name: "W/LR", value: `${wins / losses}` });
+					embedFields.push({ name: "W/LR", value: `${truncateToThreeDecimals(wins / losses)}` });
 					embedFields.push({ name: "Solo Streak", value: `${duelsSoloStreak["current"]} / ${duelsSoloStreak["best"]}` });
 					embedFields.push({ name: "Doubles Streak", value: `${duelsDoubleStreak["current"]} / ${duelsDoubleStreak["best"]}` });
 				} else if (gameMode == "bridge") {
@@ -783,9 +795,12 @@ module.exports = {
 					const tbSoloStreak = findGameKey(json["winStreaks"], "tb_solo");
 					const tbDoubleStreak = findGameKey(json["winStreaks"], "tb_doubles");
 
-					embedFields.push({ name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${kills / deaths}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${wins / losses}\n**Goals:** ${goals}` });
-					embedFields.push({ name: "__Solo__:", value: `**Kills:** ${soloKills}\n**Wins:** ${soloWins}\n**Goals:** ${soloGoals}\n__Win Streak__: ${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}` });
-					embedFields.push({ name: "__Doubles__:", value: `**Kills:** ${doublesKills}\n**Wins:** ${doublesWins}\n**Goals:** ${doublesGoals}\n__Win Streak__: ${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}` });
+					embedFields.push({
+						inline:true, name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${truncateToThreeDecimals(wins / losses)}\n**Goals:** ${goals}` });
+					embedFields.push({
+						inline:true, name: "__Solo__:", value: `**Kills:** ${soloKills}\n**Wins:** ${soloWins}\n**Goals:** ${soloGoals}\n__Win Streak__: ${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}` });
+					embedFields.push({
+						inline:true, name: "__Doubles__:", value: `**Kills:** ${doublesKills}\n**Wins:** ${doublesWins}\n**Goals:** ${doublesGoals}\n__Win Streak__: ${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}` });
 				} else if (gameMode == "murderMystery") {
 					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/murderMystery.png"
 					friendlyGameName = "Murder Mystery";
@@ -807,14 +822,17 @@ module.exports = {
 					const mmClassicStreak = findGameKey(json["winStreaks"], "mm_classic");
 					const mmInfectionStreak = findGameKey(json["winStreaks"], "mm_infection");
 
-					embedFields.push({ name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${kills / deaths}\n**Wins:** ${wins}\nBow Kills: ${bowKills}\nKnife Kills: ${knifeKills}\nKnife Throw Kills: ${throwKnifeKills}` });
 					embedFields.push({
+						inline:true, name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\nBow Kills: ${bowKills}\nKnife Kills: ${knifeKills}\nKnife Throw Kills: ${throwKnifeKills}` });
+					embedFields.push({
+						inline:true,
 						name: "__Classic__:",
-						value: `**Kills:** ${classicKills}\n**Deaths:** ${classicDeaths}\n**K/DR:** ${classicKills / classicDeaths}\n**Wins:** ${classicWins}\n__Win Streak__: ${mmClassicStreak["current"]} / ${mmClassicStreak["best"]}`,
+						value: `**Kills:** ${classicKills}\n**Deaths:** ${classicDeaths}\n**K/DR:** ${truncateToThreeDecimals(classicKills / classicDeaths)}\n**Wins:** ${classicWins}\n__Win Streak__: ${mmClassicStreak["current"]} / ${mmClassicStreak["best"]}`,
 					});
 					embedFields.push({
+						inline:true,
 						name: "__Infection__:",
-						value: `**Kills:** ${infectionKills}\n**Deaths:** ${infectionDeaths}\n**K/DR:** ${infectionKills / infectionDeaths}\n**Wins:** ${infectionWins}\n__Win Streak__: ${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`,
+						value: `**Kills:** ${infectionKills}\n**Deaths:** ${infectionDeaths}\n**K/DR:** ${truncateToThreeDecimals(infectionKills / infectionDeaths)}\n**Wins:** ${infectionWins}\n__Win Streak__: ${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`,
 					});
 				} else if (gameMode == "conquests") {
 					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/conquests.png"
@@ -831,7 +849,7 @@ module.exports = {
 					const wins = json["extraNested"]["cq"]["wins"];
 					embedFields.push({ name: "Kills", value: `${kills}` });
 					embedFields.push({ name: "Deaths", value: `${deaths}` });
-					embedFields.push({ name: "K/DR", value: `${kills / deaths}` });
+					embedFields.push({ name: "K/DR", value: `${truncateToThreeDecimals(kills / deaths)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Flags Captured", value: `${flagsCaptured}` });
 					embedFields.push({ name: "Flags Collected", value: `${flagsCollected}` });
@@ -888,7 +906,7 @@ module.exports = {
 					const wins = json["extraNested"]["uhc"]["wins"];
 					embedFields.push({ name: "Kills", value: `${kills}` });
 					embedFields.push({ name: "Deaths", value: `${deaths}` });
-					embedFields.push({ name: "K/DR", value: `${kills / deaths}` });
+					embedFields.push({ name: "K/DR", value: `${truncateToThreeDecimals(kills / deaths)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Iron Mined", value: `${ironMined}` });
 					embedFields.push({ name: "Gold Mined", value: `${goldMined}` });
@@ -909,7 +927,7 @@ module.exports = {
 					const wins = json["extraNested"]["ms"]["wins"];
 					embedFields.push({ name: "Successes", value: `${successes}` });
 					embedFields.push({ name: "Fails", value: `${fails}` });
-					embedFields.push({ name: "S/FR", value: `${successes / fails}` });
+					embedFields.push({ name: "S/FR", value: `${truncateToThreeDecimals(successes / fails)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 				}
 				if (footer != "") {

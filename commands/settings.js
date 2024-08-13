@@ -15,25 +15,25 @@ module.exports = {
 				.setDescription("Sets a setting to a specific value")
 				.addSubcommand((subcommand) =>
 					subcommand
-						.setName("ngGuildStatsEnabled")
+						.setName("ngguildstatsenabled")
 						.setDescription("Enable the displaying of NetherGames guild stats on channels")
 						.addBooleanOption((option) => option.setName("enabled").setDescription("Toggle this option").setRequired(true))
 				)
                 .addSubcommand((subcommand) =>
 					subcommand
-						.setName("ngGuildMembersChannel")
+						.setName("ngguildmemberschannel")
 						.setDescription("The channel to display the number of guild members in")
 						.addChannelOption((option) => option.setName("channel").setDescription("Channel to display this statistic").setRequired(true))
 				)
                 .addSubcommand((subcommand) =>
 					subcommand
-						.setName("ngOnlineMembersChannel")
+						.setName("ngonlinememberschannel")
 						.setDescription("The channel to display the number of online guild members in")
 						.addChannelOption((option) => option.setName("channel").setDescription("Channel to display this statistic").setRequired(true))
 				)
                 .addSubcommand((subcommand) =>
 					subcommand
-						.setName("ngGuildName")
+						.setName("ngguildname")
 						.setDescription("Associate this discord server with a NetherGames guild name")
 						.addStringOption((option) => option.setName("guild").setDescription("Name of the guild on the NetherGames server").setRequired(true))
 				)
