@@ -13,7 +13,7 @@ module.exports = {
 		});
 
 		client.user.setPresence({
-			activities: [{ name: `you use /help | ${numGuilds} Servers`, type: ActivityType.Watching }],
+			activities: [{ name: `/help | ${numGuilds} Servers`, type: ActivityType.Playing }],
 			status: 'online',
 	 	 });
 
