@@ -68,7 +68,7 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											channel.setName(onlineString);
+											await channel.setName(onlineString);
 										}
 									}
 								}
@@ -78,7 +78,7 @@ module.exports = (client) => {
 										let botPermissions = channel.permissionsFor(client.user);
 
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											if (channel) channel.setName(membersString);
+											await channel.setName(membersString);
 										}
 									}
 								}
@@ -88,7 +88,7 @@ module.exports = (client) => {
 										let botPermissions = channel.permissionsFor(client.user);
 
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											if (channel) channel.setName(xpString);
+											await channel.setName(xpString);
 										}
 									}
 								}
@@ -97,7 +97,7 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											if (channel) channel.setName(levelString);
+											await channel.setName(levelString);
 										}
 									}
 								}
@@ -106,7 +106,7 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											if (channel) channel.setName(positionString);
+											await channel.setName(positionString);
 										}
 									}
 								}
@@ -115,7 +115,7 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											if (channel) channel.setName(xpToNextLevelString);
+											await channel.setName(xpToNextLevelString);
 										}
 									}
 								}
