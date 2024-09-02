@@ -1,0 +1,12 @@
+{
+  "name": "lionbot-main",
+  "version": "1.0.0",
+  "description": "https://discord.com/oauth2/authorize?client_id=1204065955404324894",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

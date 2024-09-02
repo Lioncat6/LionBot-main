@@ -999,6 +999,9 @@ module.exports = {
 					muted = `Muted Until: ${new Date(json["mutedUntil"] * 1000).toLocaleString().replace(/  /g, " ")} (In ${Math.floor((json["mutedUntil"] - Date.now() / 1000) / 86400)} days)`;
 				}
 				var bio = json["bio"];
+				if (bio == "" || !bio){
+					bio = "`No Bio Set`"
+				}
 				var discordTag = json["discordId"];
 				if (!discordTag) {
 					discordTag = "none";

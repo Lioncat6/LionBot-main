@@ -18,5 +18,8 @@ module.exports = {
 	 	 });
 
         console.log(Guilds)
+
+		const ngUpdateChannels = require('../scheduledEvents/ngUpdateGuildChannels');
+        ngUpdateChannels(client);
 	},
 };

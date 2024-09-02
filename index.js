@@ -2,6 +2,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, ActivityType, EmbedBuilder } = require('discord.js');
 const { token } = require('./config.json');
+const sequelize = require('./db/database');
+
 
 var childProcess = require('child_process');
 
@@ -88,5 +90,12 @@ for (const file of eventFiles) {
 	}
 }
 const Discord = require("discord.js");
+
+sequelize.sync()
+    .then(() => {
+        console.log('Database & tables created!');
+    }).catch(err => {
+        console.error('Unable to connect to the database:', err);
+    });
 
 client.login(token);
