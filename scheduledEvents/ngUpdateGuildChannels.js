@@ -14,7 +14,7 @@ module.exports = (client) => {
 			});
 		if (guilds) {
 			for (let guild of guilds) {
-				if (guild.ngguildname) {
+				if (guild.ngguildname && client.guilds.cache.get(guild.discordId)) {
 					if (guild.ngonlinememberschannel || guild.ngguildmemberschannel || guild.nggxpchannel || guild.nglevelchannel || guild.ngrankchannel || guild.nggxptonextlevelchannel) {
 						const guildName = guild.ngguildname;
 						const response = await fetch(`https://api.ngmc.co/v1/guilds/${guildName}?expand=true`, {
@@ -125,5 +125,5 @@ module.exports = (client) => {
 		} else {
 			console.log("Database appears to be offline... did not update channel names!");
 		}
-	}, 5 * 60 * 1000); // 10 minutes in milliseconds
+	}, 5 * 3 * 1000); // 10 minutes in milliseconds
 };
