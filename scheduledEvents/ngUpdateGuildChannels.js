@@ -1,6 +1,6 @@
 const Guild = require("../db/Guild.js");
 const { ngToken } = require("../config.json");
-const { PermissionsBitField  } = require("discord.js");
+const { PermissionsBitField } = require("discord.js");
 const fetchHeaders = new Headers();
 fetchHeaders.append("Content-Type", "application/json");
 fetchHeaders.append("Authorization", `${ngToken}`);
@@ -23,9 +23,9 @@ module.exports = (client) => {
 						});
 						if (!response.ok) {
 							if (response.status == 404) {
-                                //throw new Error(`Guild not found!`);
-                            }
-                            //throw new Error(`NetherGames api error: ${response.status}`);
+								//throw new Error(`Guild not found!`);
+							}
+							//throw new Error(`NetherGames api error: ${response.status}`);
 						} else {
 							let json;
 							json = await response.json();
@@ -63,44 +63,59 @@ module.exports = (client) => {
 
 							if (guild.ngonlinememberschannel) {
 								let channel = client.channels.cache.get(guild.ngonlinememberschannel);
-								let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(onlineString);
+
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										channel.setName(onlineString);
+									}
 								}
 							}
 							if (guild.ngguildmemberschannel) {
 								let channel = client.channels.cache.get(guild.ngguildmemberschannel);
-                                let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(membersString);
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										if (channel) channel.setName(membersString);
+									}
 								}
 							}
 							if (guild.nggxpchannel) {
 								let channel = client.channels.cache.get(guild.nggxpchannel);
-                                let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(xpString);
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										if (channel) channel.setName(xpString);
+									}
 								}
 							}
 							if (guild.nglevelchannel) {
 								let channel = client.channels.cache.get(guild.nglevelchannel);
-                                let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(levelString);
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										if (channel) channel.setName(levelString);
+									}
 								}
 							}
 							if (guild.ngrankchannel) {
 								let channel = client.channels.cache.get(guild.ngrankchannel);
-                                let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(positionString);
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										if (channel) channel.setName(positionString);
+									}
 								}
 							}
 							if (guild.nggxptonextlevelchannel) {
 								let channel = client.channels.cache.get(guild.nggxptonextlevelchannel);
-                                let botPermissions = channel.permissionsFor(client.user);
-								if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-									if (channel) channel.setName(xpToNextLevelString);
+								if (channel) {
+									let botPermissions = channel.permissionsFor(client.user);
+									if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
+										if (channel) channel.setName(xpToNextLevelString);
+									}
 								}
 							}
 						}
