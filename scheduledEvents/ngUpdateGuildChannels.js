@@ -121,7 +121,7 @@ module.exports = (client) => {
 								}
 							}
 						} catch (error) {
-							console.log("error updating channel: "+error");
+							console.log("error updating channel: "+error);
                             
                         }
 					}
