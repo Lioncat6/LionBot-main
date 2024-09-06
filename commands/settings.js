@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField  } = require("discord.js");
 const Guild = require("../db/Guild.js");
 const { ngToken } = require("../config.json");
+const permissionHandler = require("../scripts/permissionHandler.js");
 
 const fetchHeaders = new Headers();
 fetchHeaders.append("Content-Type", "application/json");
@@ -70,7 +71,7 @@ module.exports = {
 		} catch (error) {
 			throw new Error(error);
 		}
-		if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+		if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild) || permissionHandler.checkOverride(interaction.member.id)) {
 			if (interaction.inGuild() && interaction.guild) {
 				const guildId = interaction.guild.id;
 				const guildName = interaction.guild.name;

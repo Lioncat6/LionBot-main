@@ -97,7 +97,6 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											console.log(guild.nglevelchannel);
 											await channel.setName(levelString);
 										}
 									}
@@ -131,5 +130,5 @@ module.exports = (client) => {
 		} else {
 			console.log("Database appears to be offline... did not update channel names!");
 		}
-	}, 5 * 5 * 1000); // 10 minutes in milliseconds
+	}, 5 * 60 * 1000); // 10 minutes in milliseconds
 };
