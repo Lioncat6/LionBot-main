@@ -97,7 +97,8 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											await channel.setName("test");
+											console.log(guild.nglevelchannel);
+											await channel.setName(levelString);
 										}
 									}
 								}
