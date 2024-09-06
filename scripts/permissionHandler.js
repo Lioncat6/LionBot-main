@@ -9,6 +9,8 @@ function checkOverride(id){
         if (memberId.toString() == id.toString()){
             console.log("Trusted ID bypassed permission requirements!")
             return true
+        } else {
+            console.log(memberId + " "+ id)
         }
     }
     return false;
