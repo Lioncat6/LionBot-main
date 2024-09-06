@@ -74,7 +74,8 @@ client.on('interactionCreate', async interaction => {
         } catch {
             await interaction.editReply({ content: '', embeds: [errEmbed], ephemeral: true });
         }
-		setTimeout(() => interaction.deleteReply(), 10000);
+        
+		setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 	}
 });
 const eventsPath = path.join(__dirname, 'events');

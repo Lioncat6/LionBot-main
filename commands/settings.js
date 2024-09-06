@@ -97,7 +97,7 @@ module.exports = {
 								embeds: [playerNotFoundEmbed],
 								ephemeral: true,
 							});
-							setTimeout(() => interaction.deleteReply(), 10000);
+							setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 						} else {
 							const ngErrEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`API Error ❌`).setDescription(String(response.status));
 							await interaction.editReply({
@@ -105,7 +105,7 @@ module.exports = {
 								embeds: [ngErrEmbed],
 								ephemeral: true,
 							});
-							setTimeout(() => interaction.deleteReply(), 10000);
+							setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 						}
 					} else {
 						guild.ngguildname = ngGuild;
@@ -222,7 +222,7 @@ module.exports = {
 				embeds: [noPermsEmbed],
 				ephemeral: true,
 			});
-			setTimeout(() => interaction.deleteReply(), 10000);
+			setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 		}
 	},
 };

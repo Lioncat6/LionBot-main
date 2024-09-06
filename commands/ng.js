@@ -133,7 +133,7 @@ module.exports = {
 						embeds: [noPermsEmbed],
 						ephemeral: true,
 					});
-					setTimeout(() => interaction.deleteReply(), 10000);
+					setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "ping") {
 				await interaction.editReply({ content: "Pinging endpoint 1/5... (`/servers/ping`)" });
@@ -323,7 +323,7 @@ module.exports = {
 					await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
 				} else {
 					await interaction.editReply({ content: "Please wait 30 seconds before running this command again." });
-					setTimeout(() => interaction.deleteReply(), 10000);
+					setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
@@ -1170,7 +1170,7 @@ module.exports = {
 					embeds: [ngErrEmbed],
 					ephemeral: true,
 				});
-				setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 			} else if (String(error).includes("not found")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
 				await interaction.editReply({
@@ -1178,7 +1178,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-				setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 			} else if (String(error).includes("factions data")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player has no factions data ❌`);
 				await interaction.editReply({
@@ -1186,7 +1186,7 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-				setTimeout(() => interaction.deleteReply(), 10000);
+				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
 			} else {
 				console.error(error);
 				throw new Error(error);
