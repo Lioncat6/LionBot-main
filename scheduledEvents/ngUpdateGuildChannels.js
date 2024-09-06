@@ -97,8 +97,7 @@ module.exports = (client) => {
 									if (channel) {
 										let botPermissions = channel.permissionsFor(client.user);
 										if (botPermissions.has(PermissionsBitField.Flags.ManageChannels)) {
-											console.log(levelString);
-											await channel.setName(levelString);
+											await channel.setName("test");
 										}
 									}
 								}
