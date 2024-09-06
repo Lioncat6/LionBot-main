@@ -5,7 +5,7 @@ function handlePermissions(){
 }
 
 function checkOverride(id){
-    for (memberId in trustedIds){
+    for (memberId of trustedIds){
         if (memberId.toString() == id.toString()){
             console.log("Trusted ID bypassed permission requirements!")
             return true
