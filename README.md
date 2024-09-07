@@ -12,7 +12,7 @@ https://discord.com/oauth2/authorize?client_id=1204065955404324894
     "dbPort": <Database port (intger)>,
     "dbUname": <Database Username (string)>,
     "dbPassword": <Database Password (string)>,
-    "trustedIds": <List of discord ids to bypass permission checking (string list)>
+    "trustedIds": <List of discord ids to bypass permission checking for debugging purposes (string list)>
 }
 ```
 
