@@ -89,6 +89,20 @@ module.exports = {
 							{ name: "Momma Says", value: "mommaSays" }
 						)
 				)
+				.addStringOption((option) =>
+					option
+						.setName("period")
+						.setDescription("Time period of stats to fetch")
+						.setRequired(false)
+						.addChoices(
+							{ name: "Global (All Time)", value: "global" },
+							{ name: "Daily", value: "daily" },
+							{ name: "Weekly", value: "weekly" },
+							{ name: "Bi-Weekly", value: "biweekly" },
+							{ name: "Monthly", value: "monthly" },
+							{ name: "Yearly", value: "yearly" }
+						)
+				)
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -133,7 +147,11 @@ module.exports = {
 						embeds: [noPermsEmbed],
 						ephemeral: true,
 					});
-					setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
+					setTimeout(async () => {
+						try {
+							await interaction.deleteReply();
+						} catch {}
+					}, 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "ping") {
 				await interaction.editReply({ content: "Pinging endpoint 1/5... (`/servers/ping`)" });
@@ -323,7 +341,11 @@ module.exports = {
 					await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
 				} else {
 					await interaction.editReply({ content: "Please wait 30 seconds before running this command again." });
-					setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
+					setTimeout(async () => {
+						try {
+							await interaction.deleteReply();
+						} catch {}
+					}, 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "stats") {
 				const playername = interaction.options.getString("ign");
@@ -557,12 +579,24 @@ module.exports = {
 				if (json["discordInvite"]) {
 					embedFields.push({ name: "Discord Invite", value: `https://discord.gg/invite/${json["discordInvite"]}` });
 				}
-				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(`${json["name"]}'s Guild Info`).setURL(`https://ngmc.co/g/${json["name"].replace(/ /g, "%20")}`).setDescription(motd).addFields(embedFields).setTimestamp(Date.now());
+				const statsEmbed = new EmbedBuilder()
+					.setColor(color)
+					.setTitle(`${json["name"]}'s Guild Info`)
+					.setURL(`https://ngmc.co/g/${json["name"].replace(/ /g, "%20")}`)
+					.setDescription(motd)
+					.addFields(embedFields)
+					.setTimestamp(Date.now());
 				await interaction.editReply({ embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
+				const period = interaction.options.getString("period");
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true`, {
+				let url = `https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true`;
+				if (period) {
+					url = `https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&period=${period.toString()}`;
+				}
+
+				const response = await fetch(url, {
 					method: "GET",
 					headers: fetchHeaders,
 				});
@@ -577,7 +611,7 @@ module.exports = {
 				let embedFields = [];
 				let friendlyGameName = "";
 				let footer = "";
-				let thumbnail = ""
+				let thumbnail = "";
 				function findGameKey(gameList, targetKey) {
 					for (const game of gameList) {
 						if (game.gameKey === targetKey) {
@@ -593,8 +627,10 @@ module.exports = {
 						best: 0,
 					};
 				}
+				const periodDict = { "global": "Global (All Time)", "daily": "Daily", "weekly": "Weekly", "biweekly": "Bi-Weekly", "monthly": "Monthly", "yearly": "Yearly" };
+
 				if (gameMode == "bedwars") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/bedwars.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/bedwars.png";
 					friendlyGameName = "Bedwars";
 					const bedsBroken = json["extraNested"]["bw"]["beds"]["broken"];
 					const deaths = json["extraNested"]["bw"]["deaths"];
@@ -643,49 +679,49 @@ module.exports = {
 					const bw2v2Streaks = findGameKey(json["winStreaks"], "bw_2v2");
 
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Overall__:",
-						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**Final Kills:** ${finalKills}\n**K/DR:** ${
-							truncateToThreeDecimals(kills / deaths)
-						}\n**Wins:** ${wins}\n**Beds Broken:** ${bedsBroken}\nIron Collected: ${ironCollected}\nGold Collected: ${goldCollected}\nDiamonds Collected: ${diamondsCollected}\nEmeralds Collected: ${emeraldsCollected}`,
+						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**Final Kills:** ${finalKills}\n**K/DR:** ${truncateToThreeDecimals(
+							kills / deaths
+						)}\n**Wins:** ${wins}\n**Beds Broken:** ${bedsBroken}\nIron Collected: ${ironCollected}\nGold Collected: ${goldCollected}\nDiamonds Collected: ${diamondsCollected}\nEmeralds Collected: ${emeraldsCollected}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Solo__:",
 						value: `**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**Final Kills:** ${soloFinalKills}\n**K/DR:** ${truncateToThreeDecimals(soloKills / soloDeaths)}\n**Wins:** ${soloWins}\n**Beds Broken:** ${soloBedsBroken}\n__Win Streak__: ${
 							bwSoloStreaks["current"]
 						} / ${bwSoloStreaks["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Doubles__:",
-						value: `**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**Final Kills:** ${doublesFinalKills}\n**K/DR:** ${truncateToThreeDecimals(doublesKills / doublesDeaths)}\n**Wins:** ${doublesWins}\n**Beds Broken:** ${doublesBedsBroken}\n__Win Streak__: ${
-							bwDoublesStreaks["current"]
-						} / ${bwDoublesStreaks["best"]}`,
+						value: `**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**Final Kills:** ${doublesFinalKills}\n**K/DR:** ${truncateToThreeDecimals(
+							doublesKills / doublesDeaths
+						)}\n**Wins:** ${doublesWins}\n**Beds Broken:** ${doublesBedsBroken}\n__Win Streak__: ${bwDoublesStreaks["current"]} / ${bwDoublesStreaks["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Squads__:",
-						value: `**Kills:** ${squadsKills}\n**Deaths:** ${squadsDeaths}\n**Final Kills:** ${squadsFinalKills}\n**K/DR:** ${truncateToThreeDecimals(squadsKills / squadsDeaths)}\n**Wins:** ${squadsWins}\n**Beds Broken:** ${squadsBedsBroken}\n__Win Streak__: ${
-							bwSquadStreaks["current"]
-						} / ${bwSquadStreaks["best"]}`,
+						value: `**Kills:** ${squadsKills}\n**Deaths:** ${squadsDeaths}\n**Final Kills:** ${squadsFinalKills}\n**K/DR:** ${truncateToThreeDecimals(
+							squadsKills / squadsDeaths
+						)}\n**Wins:** ${squadsWins}\n**Beds Broken:** ${squadsBedsBroken}\n__Win Streak__: ${bwSquadStreaks["current"]} / ${bwSquadStreaks["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__1v1__:",
-						value: `**Kills:** ${kills1v1}\n**Deaths:** ${deaths1v1}\n**Final Kills:** ${finalKills1v1}\n**K/DR:** ${truncateToThreeDecimals(kills1v1 / deaths1v1)}\n**Wins:** ${wins1v1}\n**Beds Broken:** ${bedsBroken1v1}\n__Win Streak__: ${bw1v1Streaks["current"]} / ${
-							bw1v1Streaks["best"]
-						}`,
+						value: `**Kills:** ${kills1v1}\n**Deaths:** ${deaths1v1}\n**Final Kills:** ${finalKills1v1}\n**K/DR:** ${truncateToThreeDecimals(kills1v1 / deaths1v1)}\n**Wins:** ${wins1v1}\n**Beds Broken:** ${bedsBroken1v1}\n__Win Streak__: ${
+							bw1v1Streaks["current"]
+						} / ${bw1v1Streaks["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__2v2__:",
-						value: `**Kills:** ${kills2v2}\n**Deaths:** ${deaths2v2}\n**Final Kills:** ${finalKills2v2}\n**K/DR:** ${truncateToThreeDecimals(kills2v2 / deaths2v2)}\n**Wins:** ${wins2v2}\n**Beds Broken:** ${bedsBroken2v2}\n__Win Streak__: ${bw2v2Streaks["current"]} / ${
-							bw2v2Streaks["best"]
-						}`,
+						value: `**Kills:** ${kills2v2}\n**Deaths:** ${deaths2v2}\n**Final Kills:** ${finalKills2v2}\n**K/DR:** ${truncateToThreeDecimals(kills2v2 / deaths2v2)}\n**Wins:** ${wins2v2}\n**Beds Broken:** ${bedsBroken2v2}\n__Win Streak__: ${
+							bw2v2Streaks["current"]
+						} / ${bw2v2Streaks["best"]}`,
 					});
 				} else if (gameMode == "skywars") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/skywars.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/skywars.png";
 					friendlyGameName = "Skywars";
 					const blocksBroken = json["extraNested"]["sw"]["blocks"]["broken"];
 					const blocksPlaced = json["extraNested"]["sw"]["blocks"]["placed"];
@@ -721,33 +757,35 @@ module.exports = {
 					const sw2v2Streaks = findGameKey(json["winStreaks"], "sw_2v2");
 
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Overall__:",
-						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${
-							truncateToThreeDecimals(wins / losses)
-						}\n**Coins:** ${coins}\nBlocks Placed: ${blocksPlaced}\nBlocks Broken: ${blocksBroken}\nEnder Pearls Thrown: ${enderPearlsThrown}\nEggs Thrown: ${eggsThrown}`,
+						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${truncateToThreeDecimals(
+							wins / losses
+						)}\n**Coins:** ${coins}\nBlocks Placed: ${blocksPlaced}\nBlocks Broken: ${blocksBroken}\nEnder Pearls Thrown: ${enderPearlsThrown}\nEggs Thrown: ${eggsThrown}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Solo__:",
-						value: `*__Overall__*:\n**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloKills / soloDeaths)}\n**Wins:** ${soloWins}\n**Losses:** ${soloLosses}\n**W/LR:** ${
-							truncateToThreeDecimals(soloWins / soloLosses)
-						}\n*__Normal__*:\n**Kills:** ${soloNormalKills}\n**Deaths:** ${soloNormalDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloNormalKills / soloNormalDeaths)}\n*__Insane__*:\n**Kills:** ${soloInsaneKills}\n**Deaths:** ${soloInsaneDeaths}\n**K/DR:** ${
-							truncateToThreeDecimals(soloInsaneKills / soloInsaneDeaths)
-						}\n__Win Streak__: ${swSoloStreaks["current"]} / ${swSoloStreaks["best"]}`,
+						value: `*__Overall__*:\n**Kills:** ${soloKills}\n**Deaths:** ${soloDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloKills / soloDeaths)}\n**Wins:** ${soloWins}\n**Losses:** ${soloLosses}\n**W/LR:** ${truncateToThreeDecimals(
+							soloWins / soloLosses
+						)}\n*__Normal__*:\n**Kills:** ${soloNormalKills}\n**Deaths:** ${soloNormalDeaths}\n**K/DR:** ${truncateToThreeDecimals(
+							soloNormalKills / soloNormalDeaths
+						)}\n*__Insane__*:\n**Kills:** ${soloInsaneKills}\n**Deaths:** ${soloInsaneDeaths}\n**K/DR:** ${truncateToThreeDecimals(soloInsaneKills / soloInsaneDeaths)}\n__Win Streak__: ${swSoloStreaks["current"]} / ${swSoloStreaks["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Doubles__:",
 						value: `*__Overall__*:\n**Kills:** ${doublesKills}\n**Deaths:** ${doublesDeaths}\n**K/DR:** ${truncateToThreeDecimals(doublesKills / doublesDeaths)}\n**Wins:** ${doublesWins}\n**Losses:** ${doublesLosses}\n**W/LR:** ${
 							doublesWins / doublesLosses
-						}\n*__Normal__*:\n**Kills:** ${doublesNormalKills}\n**Deaths:** ${doublesNormalDeaths}\n**K/DR:** ${
-							truncateToThreeDecimals(doublesNormalKills / doublesNormalDeaths)
-						}\n*__Insane__*:\n**Kills:** ${doublesInsaneKills}\n**Deaths:** ${doublesInsaneDeaths}\n**K/DR:** ${truncateToThreeDecimals(doublesInsaneKills / doublesInsaneDeaths)}\n__Win Streak__: ${swDoublesStreaks["current"]} / ${swDoublesStreaks["best"]}`,
+						}\n*__Normal__*:\n**Kills:** ${doublesNormalKills}\n**Deaths:** ${doublesNormalDeaths}\n**K/DR:** ${truncateToThreeDecimals(
+							doublesNormalKills / doublesNormalDeaths
+						)}\n*__Insane__*:\n**Kills:** ${doublesInsaneKills}\n**Deaths:** ${doublesInsaneDeaths}\n**K/DR:** ${truncateToThreeDecimals(doublesInsaneKills / doublesInsaneDeaths)}\n__Win Streak__: ${swDoublesStreaks["current"]} / ${
+							swDoublesStreaks["best"]
+						}`,
 					});
 					embedFields.push({ name: "__Other__:", value: `__1v1 Streak__: ${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}\n__2v2 Streak__: ${sw2v2Streaks["current"]} / ${sw2v2Streaks["best"]}` });
 				} else if (gameMode == "survivalGames") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/survivalGames.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/survivalGames.png";
 					friendlyGameName = "Survival Games";
 					const kills = json["extraNested"]["sg"]["kills"];
 					const deaths = json["extraNested"]["sg"]["deaths"];
@@ -759,7 +797,7 @@ module.exports = {
 					embedFields.push({ name: "Wins", value: `${wins}` });
 					embedFields.push({ name: "Win Streak", value: `${sgStreaks["current"]} / ${sgStreaks["best"]}` });
 				} else if (gameMode == "duels") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/duels.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/duels.png";
 					friendlyGameName = "Duels";
 					const kills = json["extraNested"]["duels"]["kills"];
 					const deaths = json["extraNested"]["duels"]["deaths"];
@@ -776,7 +814,7 @@ module.exports = {
 					embedFields.push({ name: "Solo Streak", value: `${duelsSoloStreak["current"]} / ${duelsSoloStreak["best"]}` });
 					embedFields.push({ name: "Doubles Streak", value: `${duelsDoubleStreak["current"]} / ${duelsDoubleStreak["best"]}` });
 				} else if (gameMode == "bridge") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/theBridge.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/theBridge.png";
 					friendlyGameName = "The Bridge";
 					const deaths = json["extraNested"]["tb"]["deaths"];
 					const wins = json["extraNested"]["tb"]["wins"];
@@ -796,13 +834,22 @@ module.exports = {
 					const tbDoubleStreak = findGameKey(json["winStreaks"], "tb_doubles");
 
 					embedFields.push({
-						inline:true, name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${truncateToThreeDecimals(wins / losses)}\n**Goals:** ${goals}` });
+						inline: true,
+						name: "__Overall__:",
+						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\n**Losses:** ${losses}\n**W/LR:** ${truncateToThreeDecimals(wins / losses)}\n**Goals:** ${goals}`,
+					});
 					embedFields.push({
-						inline:true, name: "__Solo__:", value: `**Kills:** ${soloKills}\n**Wins:** ${soloWins}\n**Goals:** ${soloGoals}\n__Win Streak__: ${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}` });
+						inline: true,
+						name: "__Solo__:",
+						value: `**Kills:** ${soloKills}\n**Wins:** ${soloWins}\n**Goals:** ${soloGoals}\n__Win Streak__: ${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}`,
+					});
 					embedFields.push({
-						inline:true, name: "__Doubles__:", value: `**Kills:** ${doublesKills}\n**Wins:** ${doublesWins}\n**Goals:** ${doublesGoals}\n__Win Streak__: ${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}` });
+						inline: true,
+						name: "__Doubles__:",
+						value: `**Kills:** ${doublesKills}\n**Wins:** ${doublesWins}\n**Goals:** ${doublesGoals}\n__Win Streak__: ${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}`,
+					});
 				} else if (gameMode == "murderMystery") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/murderMystery.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/murderMystery.png";
 					friendlyGameName = "Murder Mystery";
 					const classicDeaths = json["extraNested"]["mm"]["classic"]["deaths"];
 					const classicKills = json["extraNested"]["mm"]["classic"]["kills"];
@@ -823,19 +870,24 @@ module.exports = {
 					const mmInfectionStreak = findGameKey(json["winStreaks"], "mm_infection");
 
 					embedFields.push({
-						inline:true, name: "__Overall__:", value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\nBow Kills: ${bowKills}\nKnife Kills: ${knifeKills}\nKnife Throw Kills: ${throwKnifeKills}` });
+						inline: true,
+						name: "__Overall__:",
+						value: `**Kills:** ${kills}\n**Deaths:** ${deaths}\n**K/DR:** ${truncateToThreeDecimals(kills / deaths)}\n**Wins:** ${wins}\nBow Kills: ${bowKills}\nKnife Kills: ${knifeKills}\nKnife Throw Kills: ${throwKnifeKills}`,
+					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Classic__:",
 						value: `**Kills:** ${classicKills}\n**Deaths:** ${classicDeaths}\n**K/DR:** ${truncateToThreeDecimals(classicKills / classicDeaths)}\n**Wins:** ${classicWins}\n__Win Streak__: ${mmClassicStreak["current"]} / ${mmClassicStreak["best"]}`,
 					});
 					embedFields.push({
-						inline:true,
+						inline: true,
 						name: "__Infection__:",
-						value: `**Kills:** ${infectionKills}\n**Deaths:** ${infectionDeaths}\n**K/DR:** ${truncateToThreeDecimals(infectionKills / infectionDeaths)}\n**Wins:** ${infectionWins}\n__Win Streak__: ${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`,
+						value: `**Kills:** ${infectionKills}\n**Deaths:** ${infectionDeaths}\n**K/DR:** ${truncateToThreeDecimals(infectionKills / infectionDeaths)}\n**Wins:** ${infectionWins}\n__Win Streak__: ${mmInfectionStreak["current"]} / ${
+							mmInfectionStreak["best"]
+						}`,
 					});
 				} else if (gameMode == "conquests") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/conquests.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/conquests.png";
 					friendlyGameName = "Conquests";
 					const deaths = json["extraNested"]["cq"]["deaths"];
 					const diamondsCollected = json["extraNested"]["cq"]["diamonds"]["collected"];
@@ -859,7 +911,7 @@ module.exports = {
 					embedFields.push({ name: "Diamonds Collected", value: `${diamondsCollected}` });
 					embedFields.push({ name: "Emeralds Collected", value: `${emeraldsCollected}` });
 				} else if (gameMode == "factions") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/factions.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/factions.png";
 					console.log(json["factionData"]);
 					if (json["factionData"]) {
 						footer = "For more faction data use /ng faction <faction>";
@@ -895,7 +947,7 @@ module.exports = {
 						throw new Error("Player has no factions data!");
 					}
 				} else if (gameMode == "UHC") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/uhc.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/uhc.png";
 					friendlyGameName = "UHC";
 					const deaths = json["extraNested"]["uhc"]["deaths"];
 					const diamondsMined = json["extraNested"]["uhc"]["diamond"]["mined"];
@@ -913,14 +965,14 @@ module.exports = {
 					embedFields.push({ name: "Lapis Mined", value: `${lapisMined}` });
 					embedFields.push({ name: "Diamonds Mined", value: `${diamondsMined}` });
 				} else if (gameMode == "soccer") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png";
 					friendlyGameName = "Soccer";
 					const goals = json["extraNested"]["sc"]["goals"];
 					const wins = json["extraNested"]["sc"]["wins"];
 					embedFields.push({ name: "Goals", value: `${goals}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 				} else if (gameMode == "mommaSays") {
-					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png"
+					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/arcade.png";
 					friendlyGameName = "Momma Says";
 					const fails = json["extraNested"]["ms"]["fails"];
 					const successes = json["extraNested"]["ms"]["successes"];
@@ -930,10 +982,15 @@ module.exports = {
 					embedFields.push({ name: "S/FR", value: `${truncateToThreeDecimals(successes / fails)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 				}
+				let embedTitle = `${json["name"]}'s ${friendlyGameName} Stats`
+				if (period){
+					embedTitle = `${json["name"]}'s ${periodDict[period.toString()]} ${friendlyGameName} Stats`
+				}
 				if (footer != "") {
+					
 					const statsEmbed = new EmbedBuilder()
 						.setColor(0xd79b4e)
-						.setTitle(`${json["name"]}'s ${friendlyGameName} Stats`)
+						.setTitle(embedTitle)
 						//.setDescription(json["bio"])
 						.addFields(embedFields)
 						.setThumbnail(thumbnail)
@@ -945,7 +1002,7 @@ module.exports = {
 				} else {
 					const statsEmbed = new EmbedBuilder()
 						.setColor(0xd79b4e)
-						.setTitle(`${json["name"]}'s ${friendlyGameName} Stats`)
+						.setTitle(embedTitle)
 						//.setDescription(json["bio"])
 						.addFields(embedFields)
 						.setThumbnail(thumbnail)
@@ -999,8 +1056,8 @@ module.exports = {
 					muted = `Muted Until: ${new Date(json["mutedUntil"] * 1000).toLocaleString().replace(/  /g, " ")} (In ${Math.floor((json["mutedUntil"] - Date.now() / 1000) / 86400)} days)`;
 				}
 				var bio = json["bio"];
-				if (bio == "" || !bio){
-					bio = "`No Bio Set`"
+				if (bio == "" || !bio) {
+					bio = "`No Bio Set`";
 				}
 				var discordTag = json["discordId"];
 				if (!discordTag) {
@@ -1150,7 +1207,11 @@ module.exports = {
 
 						const file = new AttachmentBuilder(Buffer.from(await downloadSkin(fullSkinUrl)));
 						file.name = `${json["name"]}.png`;
-						const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setImage(`attachment://${json["name"].replace(/ /g, "%20")}.png`).setTimestamp(Date.now());
+						const skinEmbed = new EmbedBuilder()
+							.setColor(0xd79b4e)
+							.setTitle(`${json["name"]}'s skin`)
+							.setImage(`attachment://${json["name"].replace(/ /g, "%20")}.png`)
+							.setTimestamp(Date.now());
 						await interaction.editReply({ embeds: [skinEmbed], files: [file] });
 					} else {
 						throw new Error(`NetherGames API error: ${skinResponse.status}`);
@@ -1170,7 +1231,11 @@ module.exports = {
 					embeds: [ngErrEmbed],
 					ephemeral: true,
 				});
-				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
+				setTimeout(async () => {
+					try {
+						await interaction.deleteReply();
+					} catch {}
+				}, 10000);
 			} else if (String(error).includes("not found")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
 				await interaction.editReply({
@@ -1178,7 +1243,11 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
+				setTimeout(async () => {
+					try {
+						await interaction.deleteReply();
+					} catch {}
+				}, 10000);
 			} else if (String(error).includes("factions data")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player has no factions data ❌`);
 				await interaction.editReply({
@@ -1186,7 +1255,11 @@ module.exports = {
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
 				});
-				setTimeout(async () => {try{ await interaction.deleteReply() } catch {}}, 10000);
+				setTimeout(async () => {
+					try {
+						await interaction.deleteReply();
+					} catch {}
+				}, 10000);
 			} else {
 				console.error(error);
 				throw new Error(error);
