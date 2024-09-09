@@ -605,7 +605,7 @@ module.exports = {
 				const period = interaction.options.getString("period");
 
 				let url = `https://api.ngmc.co/v1/guilds/${guildName}`;
-
+interaction.editReply({ content: "Fetching stats... (1/2)" });
 				const response = await fetch(url, {
 					method: "GET",
 					headers: fetchHeaders,
@@ -650,7 +650,7 @@ module.exports = {
 						period: period,
 					};
 				}
-
+interaction.editReply({ content: "Fetching stats... (2/2)" });
 				const response2 = await fetch(url, {
 					method: "POST",
 					headers: fetchHeaders,
