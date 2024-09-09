@@ -33,6 +33,33 @@ module.exports = {
 				.setDescription("Fetch player stats")
 				.addStringOption((option) => option.setName("guild").setDescription("Name of the guild on the NetherGames server").setRequired(true))
 		)
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName("guildleaderboard")
+				.setDescription("Fetch top players in a guild for a given statistic and period")
+				.addStringOption((option) => option.setName("guild").setDescription("Name of the guild on the NetherGames server").setRequired(true))
+				.addStringOption((option) =>
+					option
+						.setName("statistic")
+						.setDescription("The selected statistic")
+						.setRequired(true)
+						.addChoices({ name: "Kills", value: "kills" }, { name: "K/DR", value: "kdr" }, { name: "Wins", value: "wins" }, { name: "W/LR", value: "wlr" }, { name: "GXP", value: "gxp" })
+				)
+				.addStringOption((option) =>
+					option
+						.setName("period")
+						.setDescription("Time period of stats to fetch")
+						.setRequired(false)
+						.addChoices(
+							{ name: "Global (All Time)", value: "global" },
+							{ name: "Daily", value: "daily" },
+							{ name: "Weekly", value: "weekly" },
+							{ name: "Bi-Weekly", value: "biweekly" },
+							{ name: "Monthly", value: "monthly" },
+							{ name: "Yearly", value: "yearly" }
+						)
+				)
+		)
 		.addSubcommandGroup((subcommand) =>
 			subcommand
 				.setName("roles")
@@ -138,21 +165,6 @@ module.exports = {
 					.setDescription(`There are ${json["players"]["online"]}/${json["players"]["max"]} players online`)
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await interaction.editReply({ embeds: [onlineEmbed] });
-			} else if (interaction.options.getSubcommand() == "settingsa") {
-				if (interaction.user.has(PermissionsBitField.Flags.ManageRoles)) {
-				} else {
-					const noPermsEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`You are missing the required permission: \`Manage Roles\` ❌`);
-					await interaction.editReply({
-						content: "",
-						embeds: [noPermsEmbed],
-						ephemeral: true,
-					});
-					setTimeout(async () => {
-						try {
-							await interaction.deleteReply();
-						} catch {}
-					}, 10000);
-				}
 			} else if (interaction.options.getSubcommand() == "ping") {
 				await interaction.editReply({ content: "Pinging endpoint 1/5... (`/servers/ping`)" });
 				const t1 = Date.now();
@@ -587,6 +599,178 @@ module.exports = {
 					.addFields(embedFields)
 					.setTimestamp(Date.now());
 				await interaction.editReply({ embeds: [statsEmbed] });
+			} else if (interaction.options.getSubcommand() == "guildleaderboard") {
+				const guildName = interaction.options.getString("guild");
+				const statistic = interaction.options.getString("statistic");
+				const period = interaction.options.getString("period");
+
+				let url = `https://api.ngmc.co/v1/guilds/${guildName}`;
+
+				const response = await fetch(url, {
+					method: "GET",
+					headers: fetchHeaders,
+				});
+				if (!response.ok) {
+					if (response.status == 404) {
+						throw new Error(`Guild not found!`);
+					}
+					throw new Error(`NetherGames api error: ${response.status}`);
+				}
+				let json;
+				json = await response.json();
+				let color = 0xd79b4e;
+				if (json["tagColor"]) {
+					color = parseInt(json["tagColor"].slice(1), 16);
+				}
+
+				bulkFetchList = [];
+
+				if (json["leader"]) {
+					bulkFetchList.push(json["leader"]);
+				}
+				if (json["officers"]) {
+					for (const officer of json["officers"]) {
+						bulkFetchList.push(officer);
+					}
+				}
+				if (json["members"]) {
+					for (const member of json["members"]) {
+						bulkFetchList.push(member);
+					}
+				}
+
+				url = "https://api.ngmc.co/v1/players/batch";
+				let data = {
+					names: ["lioncat6", "notthatbrit"],
+				};
+
+				if (period) {
+					data = {
+						names: bulkFetchList,
+						period: period,
+					};
+				}
+
+				const response2 = await fetch(url, {
+					method: "POST",
+					headers: fetchHeaders,
+					body: JSON.stringify(data),
+				});
+
+				if (!response2.ok) {
+					if (response.status == 404) {
+						throw new Error(`Players not found!`);
+					}
+					throw new Error(`NetherGames API error: ${response.status}`);
+				}
+
+				const playerJson = await response2.json();
+
+				function getStat(player, statistic) {
+					if (statistic == "kills") {
+						return player["kills"];
+					} else if (statistic == "kdr") {
+						let kdr = truncateToThreeDecimals(player["kills"] / player["deaths"]);
+						if (isNaN(kdr) || kdr == null || kdr == undefined) {
+							kdr = 0;
+						}
+						return kdr;
+					} else if (statistic == "wins") {
+						return player["wins"];
+					} else if (statistic == "wlr") {
+						let wlr = truncateToThreeDecimals(player["wins"] / player["losses"]);
+						if (isNaN(wlr) || wlr == null || wlr == undefined) {
+							wlr = 0;
+						}
+						return wlr;
+					} else if (statistic == "gxp") {
+						return player["extra"]["gxp"];
+					}
+				}
+
+				let membersList = [];
+				let totalValue = 0;
+				
+				for (const member of playerJson) {
+					let mUrl = `https://ngmc.co/p/${member["name"]}`;
+					mUrl = mUrl.replace(/ /g, "%20");
+					let playerStatistic = getStat(member, statistic);
+					if (playerStatistic != Infinity){
+						totalValue += playerStatistic;
+					}
+					
+					let playerString = `🔴 [${member["name"]}](${mUrl})`;
+					if (member["online"]) {
+						playerString = `🟢 [${member["name"]}](${mUrl})`;
+					}
+
+					// Insert player into the sorted list
+					let inserted = false;
+					for (let x = 0; x < membersList.length; x++) {
+						if (playerStatistic > membersList[x]["value"]) {
+							membersList.splice(x, 0, { value: playerStatistic, name: playerString });
+							inserted = true;
+							break;
+						}
+					}
+					if (!inserted) {
+						membersList.push({ value: playerStatistic, name: playerString });
+					}
+				}
+				let numList = membersList.length
+				lbString = "";
+				for (x in membersList) {
+					lbString = lbString + x + ". " + membersList[x]["name"] + " - `" + membersList[x]["value"] + "`\n";
+				}
+
+				function splitFields(rolesList) {
+					const maxChunkLength = 1024;
+					const textList = rolesList.split(/\n+/); // Split by whitespace
+					let currentChunk = "";
+					const chunks = [];
+					for (const text of textList) {
+						if (currentChunk.length + text.length + 1 <= maxChunkLength) {
+							// Add the mention to the current chunk
+							currentChunk += `${text}\n`;
+						} else {
+							// Start a new chunk
+							chunks.push(currentChunk.trim());
+							currentChunk = text + "\n";
+						}
+					}
+					// Add the last chunk
+					if (currentChunk) {
+						chunks.push(currentChunk.trim());
+					}
+					return chunks;
+				}
+				let embedFields = [];
+				const membersStrings = splitFields(lbString);
+				for (x in membersStrings) {
+					let currentField = membersStrings[x];
+					if (x == 0) {
+						embedFields.push({ name: "Leaderboard", value: currentField });
+					} else {
+						embedFields.push({ name: "---", value: currentField });
+					}
+				}
+				const statDict = { kills: "Kills", kdr: "K/DR", wins: "Wins", wlr: "W/LR", gxp: "GXP" };
+				const periodDict = { global: "Global (All Time)", daily: "Daily", weekly: "Weekly", biweekly: "Bi-Weekly", monthly: "Monthly", yearly: "Yearly" };
+
+				let name = `${json["name"]}'s Guild ${statDict[statistic]} Leaderboard`;
+				
+				let desc = `Total Guild ${statDict[statistic]}: \`${totalValue}\``;
+				if (period) {
+					name = `${json["name"]}'s ${periodDict[period]} Guild ${statDict[statistic]} Leaderboard`;
+					desc = `Total ${periodDict[period]} Guild ${statDict[statistic]}: \`${totalValue}\``;
+				}
+
+				if (statistic == "kdr" || statistic == "wlr"){
+					desc = `Guild Leaderboard`
+				}
+
+				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(name).setDescription(desc).addFields(embedFields).setTimestamp(Date.now());
+				await interaction.editReply({ embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
 				const period = interaction.options.getString("period");
@@ -627,7 +811,7 @@ module.exports = {
 						best: 0,
 					};
 				}
-				const periodDict = { "global": "Global (All Time)", "daily": "Daily", "weekly": "Weekly", "biweekly": "Bi-Weekly", "monthly": "Monthly", "yearly": "Yearly" };
+				const periodDict = { global: "Global (All Time)", daily: "Daily", weekly: "Weekly", biweekly: "Bi-Weekly", monthly: "Monthly", yearly: "Yearly" };
 
 				if (gameMode == "bedwars") {
 					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/bedwars.png";
@@ -982,12 +1166,11 @@ module.exports = {
 					embedFields.push({ name: "S/FR", value: `${truncateToThreeDecimals(successes / fails)}` });
 					embedFields.push({ name: "Wins", value: `${wins}` });
 				}
-				let embedTitle = `${json["name"]}'s ${friendlyGameName} Stats`
-				if (period){
-					embedTitle = `${json["name"]}'s ${periodDict[period.toString()]} ${friendlyGameName} Stats`
+				let embedTitle = `${json["name"]}'s ${friendlyGameName} Stats`;
+				if (period) {
+					embedTitle = `${json["name"]}'s ${periodDict[period.toString()]} ${friendlyGameName} Stats`;
 				}
 				if (footer != "") {
-					
 					const statsEmbed = new EmbedBuilder()
 						.setColor(0xd79b4e)
 						.setTitle(embedTitle)
