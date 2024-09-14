@@ -289,7 +289,12 @@ module.exports = {
 					let t3;
 					interaction.editReply({ content: "Downloading skin..." });
 					if (json["skinVisibility"]) {
-							const fullSkinUrl = ` https://starlightskins.lunareclipse.studio/render/ultimate/dummyName/full?skinUrl=${encodeURIComponent(skinUrl)}`;
+						const skinResponse = await fetch(skinUrl);
+						if (skinResponse.status === 200) {
+							const blob = await skinResponse.arrayBuffer();
+							const data = await Buffer.from(blob);
+							const base64Data = await data.toString("base64");
+							const fullSkinUrl = `https://vzge.me/full/832/${base64Data}`;
 							async function downloadSkin(url) {
 								const headers = new Headers({
 									"User-Agent": "LionBot-Discord-Bot <lioncat6pmc@gmail.com>", // Your custom User-Agent string
@@ -313,6 +318,9 @@ module.exports = {
 							t3 = Date.now();
 							interaction.editReply({ content: "Rendering Picture..." });
 							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
+						} else {
+							throw new Error(`NetherGames api error: ${response.status}`);
+						}
 					} else {
 						t3 = Date.now();
 						interaction.editReply({ content: "Rendering Picture..." });
@@ -1353,7 +1361,12 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 				json = await response.json();
 				var skinUrl = json["skin"];
 				if (render) {
-						const fullSkinUrl = ` https://starlightskins.lunareclipse.studio/render/ultimate/dummyName/full?skinUrl=${encodeURIComponent(skinUrl)}`;
+					const skinResponse = await fetch(skinUrl);
+					if (skinResponse.status === 200) {
+						const blob = await skinResponse.arrayBuffer();
+						const data = await Buffer.from(blob);
+						const base64Data = await data.toString("base64");
+						const fullSkinUrl = `https://vzge.me/full/832/${encodeURIComponent(base64Data)}`;
 						async function downloadSkin(url) {
 							const headers = new Headers({
 								"User-Agent": "LionBot-Discord-Bot <lioncat6pmc@gmail.com>", // Your custom User-Agent string
@@ -1370,7 +1383,6 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 								const buffer = await skinDataResponse.arrayBuffer();
 								return buffer; // This is the image data in a Buffer
 							} else {
-
 								throw new Error("Skin API error: "+ skinDataResponse.status);
 								return null;
 							}
@@ -1384,7 +1396,9 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 							.setImage(`attachment://${json["name"].replace(/ /g, "%20")}.png`)
 							.setTimestamp(Date.now());
 						await interaction.editReply({ embeds: [skinEmbed], files: [file] });
-
+					} else {
+						throw new Error(`NetherGames API error: ${skinResponse.status}`);
+					}
 				} else {
 					const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setURL(skinUrl).setImage(skinUrl).setTimestamp(Date.now());
 					await interaction.editReply({ embeds: [skinEmbed] });
@@ -1393,7 +1407,7 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 				await interaction.editReply({ content: `Coming soon...`, ephemeral: true });
 			}
 		} catch (error) {
-			if (String(error).toLowerCase().includes("api error")) {
+			if (String(error).includes("api error")) {
 				const ngErrEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`API Error ❌`).setDescription(String(error));
 				await interaction.editReply({
 					content: "",
