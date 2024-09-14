@@ -1407,7 +1407,7 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 				await interaction.editReply({ content: `Coming soon...`, ephemeral: true });
 			}
 		} catch (error) {
-			if (String(error).includes("api error")) {
+			if (String(error).toLowerCase().includes("api error")) {
 				const ngErrEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`API Error ❌`).setDescription(String(error));
 				await interaction.editReply({
 					content: "",
