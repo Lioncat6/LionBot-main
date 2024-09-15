@@ -26,6 +26,20 @@ module.exports = {
 				.setName("stats")
 				.setDescription("Fetch player stats")
 				.addStringOption((option) => option.setName("ign").setDescription("Name of the player on the NetherGames server").setRequired(true))
+				.addStringOption((option) =>
+					option
+						.setName("period")
+						.setDescription("Time period of stats to fetch")
+						.setRequired(false)
+						.addChoices(
+							{ name: "Global (All Time)", value: "global" },
+							{ name: "Daily", value: "daily" },
+							{ name: "Weekly", value: "weekly" },
+							{ name: "Bi-Weekly", value: "biweekly" },
+							{ name: "Monthly", value: "monthly" },
+							{ name: "Yearly", value: "yearly" }
+						)
+				)
 		)
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -360,11 +374,18 @@ module.exports = {
 					}, 10000);
 				}
 			} else if (interaction.options.getSubcommand() == "stats") {
+				const period = interaction.options.getString("period");
 				const playername = interaction.options.getString("ign");
-				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
+				let url = `https://api.ngmc.co/v1/players/${playername}`;
+				if (period) {
+					url = `https://api.ngmc.co/v1/players/${playername}?period=${period.toString()}`;
+				}
+
+				const response = await fetch(url, {
 					method: "GET",
 					headers: fetchHeaders,
 				});
+
 				if (!response.ok) {
 					if (response.status == 404) {
 						throw new Error(`Player not found!`);
@@ -377,9 +398,16 @@ module.exports = {
 				if (!tier) {
 					tier = "none";
 				}
+				const periodDict = { global: "Global (All Time)", daily: "Daily", weekly: "Weekly", biweekly: "Bi-Weekly", monthly: "Monthly", yearly: "Yearly" };
+				let embTitle = `${json["name"]}'s Player Stats`
+
+				if (period){
+					embTitle = `${json["name"]}'s ${periodDict[period]} Player Stats`
+				}
+
 				const statsEmbed = new EmbedBuilder()
 					.setColor(0xd79b4e)
-					.setTitle(`${json["name"]}'s Player Stats`)
+					.setTitle(embTitle)
 					//.setDescription(json["bio"])
 					.addFields(
 						{
