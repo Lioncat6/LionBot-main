@@ -44,7 +44,7 @@ module.exports = {
 		.addSubcommand((subcommand) =>
 			subcommand
 				.setName("guild")
-				.setDescription("Fetch player stats")
+				.setDescription("Fetch guild stats")
 				.addStringOption((option) => option.setName("guild").setDescription("Name of the guild on the NetherGames server").setRequired(true))
 		)
 		.addSubcommand((subcommand) =>

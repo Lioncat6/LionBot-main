@@ -10,6 +10,14 @@ function getRandomNumber(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const fontCache = {};
+async function loadFont(fontPath) {
+  if (!fontCache[fontPath]) {
+    fontCache[fontPath] = await Jimp.loadFont(fontPath);
+  }
+  return fontCache[fontPath];
+}
+
 async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, rightAlign) {
 	var rawTextX = x;
 	var rawTextY = y;
@@ -21,7 +29,7 @@ async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, r
 		if (x[5]) {
 			drawFont = mjBold;
 		}
-		var textFont = await Jimp.loadFont(drawFont);
+		var textFont = await loadFont(drawFont)
 		const measureTextWidth = Jimp.measureText(textFont, x[0]);
 		const measureTextHeight = Jimp.measureTextHeight(textFont, x[0], measureTextWidth);
 		if (measureTextHeight > textHeight) {
@@ -108,13 +116,13 @@ async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, r
 }
 
 async function drawText(baseImage, text, x, y, scale, color, shadow, shadowColor, shadowSize, bold, centerX, rightAlign) {
-	const imgWidth = baseImage.bitmap.width;
-	const imgHeight = baseImage.bitmap.height;
+	//const imgWidth = baseImage.bitmap.width;
+	//const imgHeight = baseImage.bitmap.height;
 	var drawFont = mjRegular;
 	if (bold) {
 		drawFont = mjBold;
 	}
-	var textFont = await Jimp.loadFont(drawFont);
+	var textFont = await loadFont(drawFont)
 	var textWidth, textHeight;
 	const measureTextWidth = Jimp.measureText(textFont, text);
 	const measureTextHeight = Jimp.measureTextHeight(textFont, text, measureTextWidth);
@@ -200,6 +208,14 @@ function scaleBrightness(hexColor, scale) {
 	const adjustedHex = `#${((adjustedRed << 16) | (adjustedGreen << 8) | adjustedBlue).toString(16).padStart(6, "0")}`;
 
 	return adjustedHex;
+}
+
+const scaledBrightnessColors = {};
+function shadowColor(color) {
+  if (!scaledBrightnessColors[color]) {
+    scaledBrightnessColors[color] = scaleBrightness(color, 0.2);
+  }
+  return scaledBrightnessColors[color];
 }
 
 async function createPlayerPictureText(allTime, monthly, weekly, skinData, transparent, unbaked) {
@@ -336,13 +352,13 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	}
 
 	if (unbaked) {
-		bgImage = await drawText(bgImage, `Generated  using  LionBot`, 5, 5, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+		bgImage = await drawText(bgImage, `Generated  using  LionBot`, 5, 5, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 	}
-	bgImage = await drawText(bgImage, `${new Date(Date.now()).toLocaleString()}`, imgWidth - 5, 5, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false, true);
+	bgImage = await drawText(bgImage, `${new Date(Date.now()).toLocaleString()}`, imgWidth - 5, 5, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false, true);
 	if (unbaked) {
-		bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight - 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+		bgImage = await drawText(bgImage, `Code by @Lioncat6`, 5, imgHeight - 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 	}
-	bgImage = await drawText(bgImage, `${playerName}`, imgWidth / 2, 50, 2, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	bgImage = await drawText(bgImage, `${playerName}`, imgWidth / 2, 50, 2, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	if (tier) {
 		var mFont = await Jimp.loadFont(mjBold);
 		let tierPosition = Jimp.measureText(mFont, `${playerName}`) + imgWidth / 2 + 5;
@@ -351,47 +367,47 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		bgImage.blit(tierPNG, tierPosition, 50);
 	}
 
-	bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	if (levelColors.length > 1) {
 		const digits = Array.from(String(level), Number);
 		let digitsList = [];
 		for (num in digits) {
-			digitsList.push([String(digits[num]), levelColors[num], true, scaleBrightness(levelColors[num], 0.2), 4, true]);
+			digitsList.push([String(digits[num]), levelColors[num], true, shadowColor(levelColors[num], 0.2), 4, true]);
 		}
 		bgImage = await drawMulticoloredText(bgImage, imgWidth / 2, imgHeight - 65, 1.7, digitsList, true);
 	} else {
-		bgImage = await drawText(bgImage, `${level}`, imgWidth / 2, imgHeight - 65, 1.7, `${levelColors[0]}`, true, scaleBrightness("${levelColors[0]}", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, `${level}`, imgWidth / 2, imgHeight - 65, 1.7, `${levelColors[0]}`, true, shadowColor("${levelColors[0]}", 0.2), 4, true, true);
 	}
 	let ranksFormatted = [];
 	if (ranks.length > 1) {
 		for (let num in ranks) {
 			if (num == 0) {
-				ranksFormatted.push([String(ranks[num]), rankColors[num], true, scaleBrightness(rankColors[num], 0.2), 4, true]);
+				ranksFormatted.push([String(ranks[num]), rankColors[num], true, shadowColor(rankColors[num], 0.2), 4, true]);
 			} else {
-				ranksFormatted.push([" • ", "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true]);
-				ranksFormatted.push([String(ranks[num]), rankColors[num], true, scaleBrightness(rankColors[num], 0.2), 4, true]);
+				ranksFormatted.push([" • ", "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true]);
+				ranksFormatted.push([String(ranks[num]), rankColors[num], true, shadowColor(rankColors[num], 0.2), 4, true]);
 			}
 		}
 		bgImage = await drawMulticoloredText(bgImage, imgWidth / 2, 120, 0.6, ranksFormatted, true);
 	} else if (ranks.length == 1) {
-		bgImage = await drawText(bgImage, String(ranks[0]), imgWidth / 2, 120, 0.6, rankColors[0], true, scaleBrightness(rankColors[0], 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, String(ranks[0]), imgWidth / 2, 120, 0.6, rankColors[0], true, shadowColor(rankColors[0], 0.2), 4, true, true);
 	}
 
-	let onlineStatus = ["offline", "#AA0000", true, scaleBrightness("#AA0000", 0.2), 2, false];
+	let onlineStatus = ["offline", "#AA0000", true, shadowColor("#AA0000", 0.2), 2, false];
 	if (online) {
-		onlineStatus = ["Online", "#00AA00", true, scaleBrightness("#00AA00", 0.2), 2, false];
+		onlineStatus = ["Online", "#00AA00", true, shadowColor("#00AA00", 0.2), 2, false];
 	}
 
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "First Joined", imgWidth / 2 + 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "First Joined", imgWidth / 2 + 350, 160, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	}
-	bgImage = await drawText(bgImage, `${firstJoin}`, imgWidth / 2 + 350, 185, 0.55, "#00AAAA", true, scaleBrightness("#00AAAA", 0.2), 3, false, true);
+	bgImage = await drawText(bgImage, `${firstJoin}`, imgWidth / 2 + 350, 185, 0.55, "#00AAAA", true, shadowColor("#00AAAA", 0.2), 3, false, true);
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "Play Time", imgWidth / 2 + 350, 208, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "Play Time", imgWidth / 2 + 350, 208, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	}
-	bgImage = await drawText(bgImage, `${playTime}`, imgWidth / 2 + 350, 233, 0.55, "#FF55FF", true, scaleBrightness("#FF55FF", 0.2), 3, false, true);
+	bgImage = await drawText(bgImage, `${playTime}`, imgWidth / 2 + 350, 233, 0.55, "#FF55FF", true, shadowColor("#FF55FF", 0.2), 3, false, true);
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "Last Seen", imgWidth / 2 - 350, 160, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "Last Seen", imgWidth / 2 - 350, 160, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	}
 	bgImage = await drawMulticoloredText(
 		bgImage,
@@ -399,10 +415,10 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		185,
 		0.55,
 		[
-			[`${lastSeen} (`, "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 2, false],
+			[`${lastSeen} (`, "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 2, false],
 			onlineStatus,
-			[")", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 2, false],
-			[`[${lastSeenLocation}]`, "#AAAAAA", true, scaleBrightness("#FFFFFF", 0.2), 2, false],
+			[")", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 2, false],
+			[`[${lastSeenLocation}]`, "#AAAAAA", true, shadowColor("#FFFFFF", 0.2), 2, false],
 		],
 		true
 	);
@@ -410,7 +426,7 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	//statistics
 	const statsBase = 300;
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "Statistics", imgWidth / 2 + 350, 270, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "Statistics", imgWidth / 2 + 350, 270, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	}
 	const leftRowCenter = imgWidth / 2 + 250;
 	if (unbaked) {
@@ -420,8 +436,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase,
 			0.5,
 			[
-				["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["XP", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -432,8 +448,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 20,
 			0.5,
 			[
-				["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Kills", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -444,8 +460,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 40,
 			0.5,
 			[
-				["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Deaths", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -456,8 +472,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 60,
 			0.5,
 			[
-				["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Wins", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -468,8 +484,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 80,
 			0.5,
 			[
-				["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Losses", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -480,8 +496,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 100,
 			0.5,
 			[
-				["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Credits", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -492,23 +508,23 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 120,
 			0.5,
 			[
-				["Vote  Status", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Vote  Status", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
 		);
 	}
-	bgImage = await drawText(bgImage, `${xp}`, leftRowCenter + 5, statsBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, statsBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, statsBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${credits}`, leftRowCenter + 5, statsBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${xp}`, leftRowCenter + 5, statsBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, statsBase + 60, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, statsBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${credits}`, leftRowCenter + 5, statsBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 	if (voted) {
-		bgImage = await drawText(bgImage, `Voted`, leftRowCenter + 5, statsBase + 120, 0.5, "#00AA00", true, scaleBrightness("#00AA00", 0.2), 4, false, false);
+		bgImage = await drawText(bgImage, `Voted`, leftRowCenter + 5, statsBase + 120, 0.5, "#00AA00", true, shadowColor("#00AA00", 0.2), 4, false, false);
 	} else {
-		bgImage = await drawText(bgImage, `Not Voted`, leftRowCenter + 5, statsBase + 120, 0.5, "#AA0000", true, scaleBrightness("#AA0000", 0.2), 4, false, false);
+		bgImage = await drawText(bgImage, `Not Voted`, leftRowCenter + 5, statsBase + 120, 0.5, "#AA0000", true, shadowColor("#AA0000", 0.2), 4, false, false);
 	}
 
 	const rightRowCenter = imgWidth / 2 + 450;
@@ -519,8 +535,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase,
 			0.5,
 			[
-				["Keys", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Keys", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -531,8 +547,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 20,
 			0.5,
 			[
-				["All Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["All Kills", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -543,8 +559,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 40,
 			0.5,
 			[
-				["All Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["All Deaths", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -555,8 +571,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 60,
 			0.5,
 			[
-				["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["K/DR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -567,8 +583,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 80,
 			0.5,
 			[
-				["AK/ADR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["AK/ADR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -579,8 +595,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 100,
 			0.5,
 			[
-				["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["W/LR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -591,8 +607,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			statsBase + 120,
 			0.5,
 			[
-				["W/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["W/DR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -619,13 +635,13 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	} else {
 		kdrColor = "#5555FF";
 	}
-	bgImage = await drawText(bgImage, `${crateKeys}`, rightRowCenter + 5, statsBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${allKills}`, rightRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${allDeaths}`, rightRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, statsBase + 60, 0.5, kdrColor, true, scaleBrightness(kdrColor, 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(allKills / allDeaths)}`, rightRowCenter + 5, statsBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, statsBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, statsBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${crateKeys}`, rightRowCenter + 5, statsBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${allKills}`, rightRowCenter + 5, statsBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${allDeaths}`, rightRowCenter + 5, statsBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, statsBase + 60, 0.5, kdrColor, true, shadowColor(kdrColor, 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(allKills / allDeaths)}`, rightRowCenter + 5, statsBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, statsBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, statsBase + 120, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 
 
 	const allTimeKillsDict = {
@@ -668,8 +684,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	
 
 	//Gstats
-	bgImage = await drawText(bgImage, "Most Played", imgWidth / 2 + 350, 446, 0.4, "#5555FF", true, scaleBrightness("#5555FF", 0.2), 4, true, true);
-	//bgImage = await drawText(bgImage, "Coming Soon...", imgWidth / 2 + 350, 462, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+	bgImage = await drawText(bgImage, "Most Played", imgWidth / 2 + 350, 446, 0.4, "#5555FF", true, shadowColor("#5555FF", 0.2), 4, true, true);
+	//bgImage = await drawText(bgImage, "Coming Soon...", imgWidth / 2 + 350, 462, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	gStatsBase = 462+5;
 	if (gStatsGame == "bedwars") {
 		const bedsBroken = allTime["extraNested"]["bw"]["beds"]["broken"];
@@ -681,31 +697,31 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		const ironCollected = allTime["extraNested"]["bw"]["iron"]["collected"];
 		const kills = allTime["extraNested"]["bw"]["kills"];
 		const wins = allTime["extraNested"]["bw"]["wins"];
-		bgImage = await drawText(bgImage, "Bedwars", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Beds Broken", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["Final Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Bedwars", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Beds Broken", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["Final Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Diamonds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Emeralds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Diamonds", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Emeralds", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 		
 		
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${bedsBroken}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${finalKills}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${bedsBroken}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${finalKills}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${ironCollected}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${goldCollected}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${diamondsCollected}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${emeraldsCollected}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${ironCollected}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${goldCollected}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${diamondsCollected}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${emeraldsCollected}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 
 	} else if (gStatsGame == "skywars") {
@@ -718,54 +734,54 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		const enderPearlsThrown = allTime["extraNested"]["sw"]["epearls"]["thrown"];
 		const kills = allTime["extraNested"]["sw"]["kills"];
 		const losses = allTime["extraNested"]["sw"]["losses"];
-		bgImage = await drawText(bgImage, "Skywars", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+120, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Skywars", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Losses", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["W/LR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+120, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Coins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Placed", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Broken", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Pearls", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["Eggs", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Coins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Placed", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Broken", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Pearls", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["Eggs", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, leftRowCenter + 5, gStatsBase + 120, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, leftRowCenter + 5, gStatsBase + 120, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${coins}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${blocksPlaced}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${blocksBroken}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${enderPearlsThrown}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${eggsThrown}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${coins}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${blocksPlaced}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${blocksBroken}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${enderPearlsThrown}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${eggsThrown}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	} else if (gStatsGame == "duels") {
 		const kills = allTime["extraNested"]["duels"]["kills"];
 		const deaths = allTime["extraNested"]["duels"]["deaths"];
 		const wins = allTime["extraNested"]["duels"]["wins"];
 		const losses = allTime["extraNested"]["duels"]["losses"];
-		bgImage = await drawText(bgImage, "Duels", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Duels", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Losses", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["W/LR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${losses}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${losses}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	} else if (gStatsGame == "bridge") {
 		const deaths = allTime["extraNested"]["tb"]["deaths"];
@@ -774,44 +790,44 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		const kills = allTime["extraNested"]["tb"]["kills"];
 		const losses = allTime["extraNested"]["tb"]["losses"];
 
-		bgImage = await drawText(bgImage, "The Bridge", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "The Bridge", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Losses", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Goals", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/LR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Goals", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${losses}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${goals}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / losses)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${goals}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	} else if (gStatsGame == "murder") {
 		const deaths = allTime["extraNested"]["mm"]["deaths"];
 		const kills = allTime["extraNested"]["mm"]["kills"];
 		const wins = allTime["extraNested"]["mm"]["wins"];
 
-		bgImage = await drawText(bgImage, "Murder Mystery", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Murder Mystery", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	} else if (gStatsGame == "conquests") {
 		const deaths = allTime["extraNested"]["cq"]["deaths"];
@@ -824,30 +840,30 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		const ironCollected = allTime["extraNested"]["cq"]["iron"]["collected"];
 		const kills = allTime["extraNested"]["cq"]["kills"];
 		const wins = allTime["extraNested"]["cq"]["wins"];
-		bgImage = await drawText(bgImage, "Conquests", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Flags Captured", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["Flags Collected", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Conquests", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+80, .5, [ ["Flags Captured", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+100, .5, [ ["Flags Collected", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Diamonds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Emeralds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Diamonds", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Emeralds", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+100, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${flagsCaptured}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${flagsCollected}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${flagsCaptured}`, leftRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${flagsCollected}`, leftRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${ironCollected}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${goldCollected}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${diamondsCollected}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${emeraldsCollected}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${ironCollected}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${goldCollected}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${diamondsCollected}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${emeraldsCollected}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 100, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	  
 	} else if (gStatsGame == "uhc") {
@@ -858,52 +874,52 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 		const kills = allTime["extraNested"]["uhc"]["kills"];
 		const lapisMined = allTime["extraNested"]["uhc"]["lapis"]["mined"];
 		const wins = allTime["extraNested"]["uhc"]["wins"];
-		bgImage = await drawText(bgImage, "UHC", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+120, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "UHC", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+120, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Lapis", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Diamonds", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["Iron", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["Gold", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+60, .5, [ ["Lapis", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+80, .5, [ ["Diamonds", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, leftRowCenter + 5, gStatsBase + 120, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, leftRowCenter + 5, gStatsBase + 120, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${ironMined}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${goldMined}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${lapisMined}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${diamondsMined}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${ironMined}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${goldMined}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${lapisMined}`, rightRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${diamondsMined}`, rightRowCenter + 5, gStatsBase + 80, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	} else if (gStatsGame == "survivalGames") {
 		const kills = allTime["extraNested"]["sg"]["kills"];
 		const deaths = allTime["extraNested"]["sg"]["deaths"];
 		const wins = allTime["extraNested"]["sg"]["wins"];
-		bgImage = await drawText(bgImage, "Survival Games", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, scaleBrightness("#ffffff", .2), 4, true, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawText(bgImage, "Survival Games", imgWidth / 2 + 350, gStatsBase-5, .65, "#ffffff", true, shadowColor("#ffffff", .2), 4, true, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+20, .5, [ ["Kills", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+40, .5, [ ["Deaths", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, leftRowCenter, gStatsBase+60, .5, [ ["Wins", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 	  
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
-		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+20, .5, [ ["W/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
+		bgImage = await drawMulticoloredText( bgImage, rightRowCenter, gStatsBase+40, .5, [ ["K/DR", "#55FFFF", true, shadowColor("#55FFFF", .2), 4, false], [":", "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false] ], false, true);
 
-		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${kills}`, leftRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${deaths}`, leftRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${wins}`, leftRowCenter + 5, gStatsBase + 60, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
-		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, scaleBrightness("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(wins / deaths)}`, rightRowCenter + 5, gStatsBase + 20, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
+		bgImage = await drawText(bgImage, `${truncateToThreeDecimals(kills / deaths)}`, rightRowCenter + 5, gStatsBase + 40, .5, "#FFFFFF", true, shadowColor("#FFFFFF", .2), 4, false, false, false);
 
 	}
 
 	//Win Streaks
 	const winSteaksBase = 255;
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "Win Streaks", imgWidth / 2 - 350, 225, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "Win Streaks", imgWidth / 2 - 350, 225, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 	}
 	const leftLeftRowCenter = imgWidth / 2 - 450;
 	if (unbaked) {
@@ -913,8 +929,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase,
 			0.5,
 			[
-				["BW Solo", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["BW Solo", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -925,8 +941,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 20,
 			0.5,
 			[
-				["BW Doubles", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["BW Doubles", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -937,8 +953,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 40,
 			0.5,
 			[
-				["BW Squads", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["BW Squads", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -949,8 +965,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 60,
 			0.5,
 			[
-				["BW 1v1", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["BW 1v1", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -961,8 +977,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 80,
 			0.5,
 			[
-				["BW 2v2", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["BW 2v2", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -973,8 +989,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 100,
 			0.5,
 			[
-				["SW Solo", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["SW Solo", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -985,8 +1001,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 120,
 			0.5,
 			[
-				["SW Doubles", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["SW Doubles", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -997,21 +1013,21 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 140,
 			0.5,
 			[
-				["SW 1v1", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["SW 1v1", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
 		);
 	}
-	bgImage = await drawText(bgImage, `${bwSoloStreaks["current"]} / ${bwSoloStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${bwDoublesStreaks["current"]} / ${bwDoublesStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${bwSquadStreaks["current"]} / ${bwSquadStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${bw1v1Streaks["current"]} / ${bw1v1Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${bw2v2Streaks["current"]} / ${bw2v2Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${swSoloStreaks["current"]} / ${swSoloStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${swDoublesStreaks["current"]} / ${swDoublesStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 140, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${bwSoloStreaks["current"]} / ${bwSoloStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${bwDoublesStreaks["current"]} / ${bwDoublesStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${bwSquadStreaks["current"]} / ${bwSquadStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${bw1v1Streaks["current"]} / ${bw1v1Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 60, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${bw2v2Streaks["current"]} / ${bw2v2Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${swSoloStreaks["current"]} / ${swSoloStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${swDoublesStreaks["current"]} / ${swDoublesStreaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 120, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${sw1v1Streaks["current"]} / ${sw1v1Streaks["best"]}`, leftLeftRowCenter - 10 + 5, winSteaksBase + 140, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 
 	const leftRightRowCenter = imgWidth / 2 - 250;
 	if (unbaked) {
@@ -1021,8 +1037,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase,
 			0.5,
 			[
-				["TB Solo", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["TB Solo", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1033,8 +1049,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 20,
 			0.5,
 			[
-				["TB Doubles", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["TB Doubles", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1045,8 +1061,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 40,
 			0.5,
 			[
-				["SG Solo", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["SG Solo", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1057,8 +1073,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 60,
 			0.5,
 			[
-				["Duels Solo", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Duels Solo", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1069,8 +1085,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 80,
 			0.5,
 			[
-				["Duels Double", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Duels Double", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1081,8 +1097,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 100,
 			0.5,
 			[
-				["MM Classic", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["MM Classic", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1093,8 +1109,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 120,
 			0.5,
 			[
-				["MM Infection", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["MM Infection", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1105,34 +1121,34 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			winSteaksBase + 140,
 			0.5,
 			[
-				["SW 2v2", "#FFAA00", true, scaleBrightness("#FFAA00", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["SW 2v2", "#FFAA00", true, shadowColor("#FFAA00", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
 		);
 	}
-	bgImage = await drawText(bgImage, `${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${sgStreaks["current"]} / ${sgStreaks["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${duelsSoloStreak["current"]} / ${duelsSoloStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${duelsDoubleStreak["current"]} / ${duelsDoubleStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${mmClassicStreak["current"]} / ${mmClassicStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${sw2v2Streaks["current"]} / ${sw2v2Streaks["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 140, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${tbSoloStreak["current"]} / ${tbSoloStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${tbDoubleStreak["current"]} / ${tbDoubleStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${sgStreaks["current"]} / ${sgStreaks["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${duelsSoloStreak["current"]} / ${duelsSoloStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 60, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${duelsDoubleStreak["current"]} / ${duelsDoubleStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${mmClassicStreak["current"]} / ${mmClassicStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${mmInfectionStreak["current"]} / ${mmInfectionStreak["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 120, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${sw2v2Streaks["current"]} / ${sw2v2Streaks["best"]}`, leftRightRowCenter + 10 + 5, winSteaksBase + 140, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 
 	//monthly / weekly
 	const wmBase = 455;
 	if (unbaked) {
-		bgImage = await drawText(bgImage, "Monthly        •        Weekly", imgWidth / 2 - 350, wmBase - 30, 0.65, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, true, true);
+		bgImage = await drawText(bgImage, "Monthly        •        Weekly", imgWidth / 2 - 350, wmBase - 30, 0.65, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 		bgImage = await drawMulticoloredText(
 			bgImage,
 			leftLeftRowCenter,
 			wmBase,
 			0.5,
 			[
-				["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Wins", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1143,8 +1159,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 20,
 			0.5,
 			[
-				["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Losses", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1155,8 +1171,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 40,
 			0.5,
 			[
-				["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["W/LR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1167,8 +1183,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 60,
 			0.5,
 			[
-				["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Kills", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1179,8 +1195,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 80,
 			0.5,
 			[
-				["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Deaths", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1191,15 +1207,15 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 100,
 			0.5,
 			[
-				["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["K/DR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
 		);
 	}
-	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
-	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
+	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],],false,true);
+	//bgImage = await drawMulticoloredText(bgImage,leftLeftRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],],false,true	);
 
 	let monthlyWLR = truncateToThreeDecimals(monthlyWins / monthlyLosses);
 	if (!monthlyWLR) {
@@ -1229,14 +1245,14 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	} else {
 		mkdrColor = "#5555FF";
 	}
-	bgImage = await drawText(bgImage, `${monthlyWins}`, leftLeftRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyLosses}`, leftLeftRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyKills}`, leftLeftRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyDeaths}`, leftLeftRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, mkdrColor, true, scaleBrightness(mkdrColor, 0.2), 4, false, false);
-	//bgImage = await drawText(bgImage, `${monthlyCredits}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	//bgImage = await drawText(bgImage, `${monthlyXp}`, leftLeftRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyWins}`, leftLeftRowCenter + 5, wmBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyLosses}`, leftLeftRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyWLR}`, leftLeftRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyKills}`, leftLeftRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyDeaths}`, leftLeftRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${monthlyKDR}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, mkdrColor, true, shadowColor(mkdrColor, 0.2), 4, false, false);
+	//bgImage = await drawText(bgImage, `${monthlyCredits}`, leftLeftRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	//bgImage = await drawText(bgImage, `${monthlyXp}`, leftLeftRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 	if (unbaked) {
 		bgImage = await drawMulticoloredText(
 			bgImage,
@@ -1244,8 +1260,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase,
 			0.5,
 			[
-				["Wins", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Wins", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1256,8 +1272,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 20,
 			0.5,
 			[
-				["Losses", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Losses", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1268,8 +1284,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 40,
 			0.5,
 			[
-				["W/LR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["W/LR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1280,8 +1296,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 60,
 			0.5,
 			[
-				["Kills", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Kills", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1292,8 +1308,8 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 80,
 			0.5,
 			[
-				["Deaths", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["Deaths", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
@@ -1304,15 +1320,15 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			wmBase + 100,
 			0.5,
 			[
-				["K/DR", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],
-				[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],
+				["K/DR", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],
+				[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],
 			],
 			false,
 			true
 		);
 	}
-	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true);
-	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, scaleBrightness("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, scaleBrightness("#FFFFFF", 0.2), 4, false],],false,true	);
+	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 100,0.5,[["Credits", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],],false,true);
+	//bgImage = await drawMulticoloredText(bgImage,leftRightRowCenter,wmBase + 120,0.5,[	["XP", "#55FFFF", true, shadowColor("#55FFFF", 0.2), 4, false],	[":", "#FFFFFF", true, shadowColor("#FFFFFF", 0.2), 4, false],],false,true	);
 	let weeklyWLR = truncateToThreeDecimals(weeklyWins / weeklyLosses);
 	if (!weeklyWLR) {
 		weeklyWLR = 0;
@@ -1341,14 +1357,14 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	} else {
 		wkdrColor = "#5555FF";
 	}
-	bgImage = await drawText(bgImage, `${weeklyWins}`, leftRightRowCenter + 5, wmBase, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyLosses}`, leftRightRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyKills}`, leftRightRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyDeaths}`, leftRightRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 100, 0.5, wkdrColor, true, scaleBrightness(wkdrColor, 0.2), 4, false, false);
-	//bgImage = await drawText(bgImage, `${weeklyCredits}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
-	//bgImage = await drawText(bgImage, `${weeklyXp}`, leftRightRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, scaleBrightness("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyWins}`, leftRightRowCenter + 5, wmBase, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyLosses}`, leftRightRowCenter + 5, wmBase + 20, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyWLR}`, leftRightRowCenter + 5, wmBase + 40, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyKills}`, leftRightRowCenter + 5, wmBase + 60, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyDeaths}`, leftRightRowCenter + 5, wmBase + 80, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	bgImage = await drawText(bgImage, `${weeklyKDR}`, leftRightRowCenter + 5, wmBase + 100, 0.5, wkdrColor, true, shadowColor(wkdrColor, 0.2), 4, false, false);
+	//bgImage = await drawText(bgImage, `${weeklyCredits}`, leftRightRowCenter + 5, wmBase + 100, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
+	//bgImage = await drawText(bgImage, `${weeklyXp}`, leftRightRowCenter + 5, wmBase + 120, 0.5, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, false, false);
 
 	//skin "unknown_skin.png"
 	if (!skinData) {
