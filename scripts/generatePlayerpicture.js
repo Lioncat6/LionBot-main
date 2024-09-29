@@ -18,6 +18,17 @@ async function loadFont(fontPath) {
   return fontCache[fontPath];
 }
 
+const jimpImageCache = {};
+
+async function getCachedImage(width, height) {
+  const key = `${width}_${height}`;
+  if (!jimpImageCache[key]) {
+    jimpImageCache[key] = await new Jimp(width, height, 0x0);
+  }
+  // Create a new image by cloning the cached one
+  return jimpImageCache[key].clone();
+}
+
 async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, rightAlign) {
 	var rawTextX = x;
 	var rawTextY = y;
@@ -63,20 +74,15 @@ async function drawMulticoloredText(baseImage, x, y, scale, textList, centerX, r
 		const cShadowSize = current[4];
 		const cBold = current[5];
 
-		let textImage = new Jimp(totalWidth + 10 + cShadowSize, textHeight + cShadowSize, 0x0, (err, textImage) => {
-			//((0x0 = 0 = rgba(0, 0, 0, 0)) = transparent)
-			if (err) throw err;
-		});
+		let textImage = await getCachedImage(totalWidth + 10 + cShadowSize, textHeight + cShadowSize)
+		var shadowImage;
 		if (cShadow) {
-			shadowImage = new Jimp(totalWidth + 10 + cShadowSize, textHeight + cShadowSize, 0x0, (err, textImage) => {
-				//((0x0 = 0 = rgba(0, 0, 0, 0)) = transparent)
-				if (err) throw err;
-			});
+			shadowImage = await getCachedImage(totalWidth + 10 + cShadowSize, textHeight + cShadowSize);
 		}
 		if (cBold) {
 			drawFont = mjBold;
 		}
-		var textFont = await Jimp.loadFont(drawFont);
+		var textFont = await loadFont(drawFont);
 		if (x > 0) {
 			const offset = addOffset + widthList[0];
 			addOffset = offset;
@@ -140,16 +146,11 @@ async function drawText(baseImage, text, x, y, scale, color, shadow, shadowColor
     y = y / scale;
   }*/
 	//console.log(x + textWidth + 10, y + textHeight + 10)
-	let textImage = new Jimp(textWidth + 20, textHeight + 20, 0x0, (err, textImage) => {
-		//((0x0 = 0 = rgba(0, 0, 0, 0)) = transparent)
-		if (err) throw err;
-	});
+	
+	let textImage = await getCachedImage(textWidth + 20, textHeight + 20);
 	var shadowImage;
 	if (shadow) {
-		shadowImage = new Jimp(textWidth + shadowSize + 20, textHeight + shadowSize + 20, 0x0, (err, textImage) => {
-			//((0x0 = 0 = rgba(0, 0, 0, 0)) = transparent)
-			if (err) throw err;
-		});
+		shadowImage = await getCachedImage(textWidth + shadowSize + 20, textHeight + shadowSize + 20);
 	}
 
 	textImage.print(textFont, 0, 0, text);
@@ -261,6 +262,12 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	const weeklyLosses = weekly["losses"];
 	const weeklyCredits = weekly["credits"];
 
+	const gameKeyMap = new Map(allTime["winStreaks"].map(game => [game.gameKey, game]));
+	
+	function getGameKey(targetKey) {
+	  return gameKeyMap.get(targetKey) || { gameKey: targetKey, gameKeyFriendly: "Unknown Game", current: 0, best: 0 };
+	}
+
 	function findGameKey(gameList, targetKey) {
 		for (const game of gameList) {
 			if (game.gameKey === targetKey) {
@@ -276,22 +283,22 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	}
 
 	//streaks
-	const bwDoublesStreaks = findGameKey(allTime["winStreaks"], "bw_doubles");
-	const bwSoloStreaks = findGameKey(allTime["winStreaks"], "bw_solo");
-	const bwSquadStreaks = findGameKey(allTime["winStreaks"], "bw_squads");
-	const bw1v1Streaks = findGameKey(allTime["winStreaks"], "bw_1v1");
-	const bw2v2Streaks = findGameKey(allTime["winStreaks"], "bw_2v2");
-	const swDoublesStreaks = findGameKey(allTime["winStreaks"], "sw_doubles");
-	const swSoloStreaks = findGameKey(allTime["winStreaks"], "sw_solo");
-	const sw1v1Streaks = findGameKey(allTime["winStreaks"], "sw_1v1");
-	const sw2v2Streaks = findGameKey(allTime["winStreaks"], "sw_2v2");
-	const sgStreaks = findGameKey(allTime["winStreaks"], "sg_solo");
-	const duelsSoloStreak = findGameKey(allTime["winStreaks"], "duels_solo");
-	const duelsDoubleStreak = findGameKey(allTime["winStreaks"], "duels_doubles");
-	const tbSoloStreak = findGameKey(allTime["winStreaks"], "tb_solo");
-	const tbDoubleStreak = findGameKey(allTime["winStreaks"], "tb_doubles");
-	const mmClassicStreak = findGameKey(allTime["winStreaks"], "mm_classic");
-	const mmInfectionStreak = findGameKey(allTime["winStreaks"], "mm_infection");
+	const bwDoublesStreaks = getGameKey("bw_doubles");
+	const bwSoloStreaks = getGameKey("bw_solo");
+	const bwSquadStreaks = getGameKey("bw_squads");
+	const bw1v1Streaks = getGameKey("bw_1v1");
+	const bw2v2Streaks = getGameKey("bw_2v2");
+	const swDoublesStreaks = getGameKey("sw_doubles");
+	const swSoloStreaks = getGameKey("sw_solo");
+	const sw1v1Streaks = getGameKey("sw_1v1");
+	const sw2v2Streaks = getGameKey("sw_2v2");
+	const sgStreaks = getGameKey("sg_solo");
+	const duelsSoloStreak = getGameKey("duels_solo");
+	const duelsDoubleStreak = getGameKey("duels_doubles");
+	const tbSoloStreak = getGameKey("tb_solo");
+	const tbDoubleStreak = getGameKey("tb_doubles");
+	const mmClassicStreak = getGameKey("mm_classic");
+	const mmInfectionStreak = getGameKey("mm_infection");
 
 	let lastSeenLocation = "location hidden";
 	try {
@@ -338,16 +345,18 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 	}
 
 	var t1 = Date.now();
-	let bgImage = await Jimp.read(fileName);
+	let [bgImage, overlay, bakedText] = await Promise.all([
+		Jimp.read(fileName),
+		Jimp.read("./assets/overlay.png"),
+		Jimp.read("./assets/baked.png")
+	  ]);
 	if (!transparent) {
-		let overlay = await Jimp.read("./assets/overlay.png");
 		bgImage.blit(overlay, 0, 0);
 	}
 	const imgWidth = bgImage.bitmap.width;
 	const imgHeight = bgImage.bitmap.height;
 
 	if (!unbaked) {
-		let bakedText = await Jimp.read("./assets/baked.png");
 		bgImage.blit(bakedText, 0, 0);
 	}
 
