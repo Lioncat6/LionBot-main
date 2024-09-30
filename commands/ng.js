@@ -244,6 +244,8 @@ module.exports = {
 					let options = interaction.options.getString("options");
 					let transparent = false;
 					let unbaked = false;
+					let parallel = false;
+					let noSkin = false
 					if (!options) {
 						options = "none";
 					}
@@ -252,6 +254,12 @@ module.exports = {
 					}
 					if (options.toLowerCase().includes("unbaked")) {
 						unbaked = true;
+					}
+					if (options.toLowerCase().includes("parallel")) {
+						parallel = true;
+					}
+					if (options.toLowerCase().includes("noskin")) {
+						noSkin = true;
 					}
 					const render = true;
 					const response = await fetch(`https://api.ngmc.co/v1/players/${playername}?withWinStreaks=true&withGuildData=true`, {
@@ -302,7 +310,7 @@ module.exports = {
 					const t2 = Date.now();
 					let t3;
 					interaction.editReply({ content: "Downloading skin..." });
-					if (json["skinVisibility"]) {
+					if (json["skinVisibility"] && !noSkin) {
 						const skinResponse = await fetch(skinUrl);
 						if (skinResponse.status === 200) {
 							const blob = await skinResponse.arrayBuffer();
@@ -331,14 +339,14 @@ module.exports = {
 							}
 							t3 = Date.now();
 							interaction.editReply({ content: "Rendering Picture..." });
-							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked);
+							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked, parallel);
 						} else {
 							throw new Error(`NetherGames api error: ${response.status}`);
 						}
 					} else {
 						t3 = Date.now();
 						interaction.editReply({ content: "Rendering Picture..." });
-						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked);
+						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked, parallel);
 					}
 
 					const file = new AttachmentBuilder(playerPictureBuffer);
@@ -1124,7 +1132,7 @@ interaction.editReply({ content: "Fetching stats... (2/2)" });
 					embedFields.push({ name: "Emeralds Collected", value: `${emeraldsCollected}` });
 				} else if (gameMode == "factions") {
 					thumbnail = "https://github.com/Lioncat6/lbassets/raw/main/factions.png";
-					console.log(json["factionData"]);
+					//console.log(json["factionData"]);
 					if (json["factionData"]) {
 						footer = "For more faction data use /ng faction <faction>";
 						friendlyGameName = "Factions";
