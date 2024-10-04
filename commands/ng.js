@@ -2,6 +2,8 @@ const { SlashCommandBuilder, Client, GatewayIntentBits, EmbedBuilder, Attachment
 var request = require("request").defaults({ encoding: null });
 const { ngToken } = require("../config.json");
 const playerPicture = require("../scripts/generatePlayerpicture.js");
+const utils = require("../scripts/utils.js");
+const safeEditReply = utils.safeEditReply
 
 const fetchHeaders = new Headers();
 fetchHeaders.append("Content-Type", "application/json");
@@ -178,9 +180,9 @@ module.exports = {
 					.setTitle(`${json["players"]["online"]} Online Players`)
 					.setDescription(`There are ${json["players"]["online"]}/${json["players"]["max"]} players online`)
 					.setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
-				await interaction.editReply({ content: "", embeds: [onlineEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "ping") {
-				await interaction.editReply({ content: "Pinging endpoint 1/5... (`/servers/ping`)" });
+				await safeEditReply(interaction, { content: "Pinging endpoint 1/5... (`/servers/ping`)" });
 				const t1 = Date.now();
 				const response = await fetch("https://api.ngmc.co/v1/servers/ping", {
 					method: "GET",
@@ -190,7 +192,7 @@ module.exports = {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
 				const t2 = Date.now();
-				await interaction.editReply({ content: "Pinging endpoint 2/5... (`/players`)" });
+				await safeEditReply(interaction, { content: "Pinging endpoint 2/5... (`/players`)" });
 				const response2 = await fetch("https://api.ngmc.co/v1/players/Lioncat6", {
 					method: "GET",
 					headers: fetchHeaders,
@@ -199,7 +201,7 @@ module.exports = {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
 				const t3 = Date.now();
-				await interaction.editReply({ content: "Pinging endpoint 3/5... (`/guilds`)" });
+				await safeEditReply(interaction, { content: "Pinging endpoint 3/5... (`/guilds`)" });
 				const response3 = await fetch("https://api.ngmc.co/v1/guilds/cosmic", {
 					method: "GET",
 					headers: fetchHeaders,
@@ -208,7 +210,7 @@ module.exports = {
 					throw new Error(`NetherGames api error: ${response.status}`);
 				}
 				const t4 = Date.now();
-				await interaction.editReply({ content: "Pinging endpoint 4/5... (`/players/*?period=monthly`)" });
+				await safeEditReply(interaction, { content: "Pinging endpoint 4/5... (`/players/*?period=monthly`)" });
 				const response4 = await fetch("https://api.ngmc.co/v1/players/Lioncat6?period=monthly", {
 					method: "GET",
 					headers: fetchHeaders,
@@ -235,11 +237,11 @@ module.exports = {
 					color = 0x000000;
 				}
 				const onlineEmbed = new EmbedBuilder().setColor(color).setTitle(`NetherGames API Latency`).setDescription(description).setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
-				await interaction.editReply({ content: "", embeds: [onlineEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
 				if (!playerPictureCooldowns.has(interaction.user.id)) {
 					const t1 = Date.now();
-					await interaction.editReply({ content: "Fetching stats... (1/3)" });
+					await safeEditReply(interaction, { content: "Fetching stats... (1/3)" });
 					const playername = interaction.options.getString("ign");
 					let options = interaction.options.getString("options");
 					let transparent = false;
@@ -275,7 +277,7 @@ module.exports = {
 					let json;
 					json = await response.json();
 					var skinUrl = json["skin"];
-					await interaction.editReply({ content: "Fetching stats... (2/3)" });
+					await safeEditReply(interaction, { content: "Fetching stats... (2/3)" });
 					const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -289,7 +291,7 @@ module.exports = {
 					}
 					let monthly;
 					monthly = await monthlyResponse.json();
-					await interaction.editReply({ content: "Fetching stats... (3/3)" });
+					await safeEditReply(interaction, { content: "Fetching stats... (3/3)" });
 					const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -309,7 +311,7 @@ module.exports = {
 					let playerPictureBuffer;
 					const t2 = Date.now();
 					let t3;
-					await interaction.editReply({ content: "Downloading skin..." });
+					await safeEditReply(interaction, { content: "Downloading skin..." });
 					if (json["skinVisibility"] && !noSkin) {
 						const skinResponse = await fetch(skinUrl);
 						if (skinResponse.status === 200) {
@@ -338,14 +340,14 @@ module.exports = {
 								}
 							}
 							t3 = Date.now();
-							await interaction.editReply({ content: "Rendering Picture..." });
+							await safeEditReply(interaction, { content: "Rendering Picture..." });
 							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked, parallel);
 						} else {
 							throw new Error(`NetherGames api error: ${response.status}`);
 						}
 					} else {
 						t3 = Date.now();
-						await interaction.editReply({ content: "Rendering Picture..." });
+						await safeEditReply(interaction, { content: "Rendering Picture..." });
 						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked, parallel);
 					}
 
@@ -372,9 +374,9 @@ module.exports = {
 						.setImage(`attachment://playerPicture.png`)
 						.setTimestamp(Date.now());
 
-					await interaction.editReply({ content: "", embeds: [playerPictureEmbed], files: [file] });
+					await safeEditReply(interaction, { content: "", embeds: [playerPictureEmbed], files: [file] });
 				} else {
-					await interaction.editReply({ content: "Please wait 30 seconds before running this command again." });
+					await safeEditReply(interaction, { content: "Please wait 30 seconds before running this command again." });
 					setTimeout(async () => {
 						try {
 							await interaction.deleteReply();
@@ -465,7 +467,7 @@ module.exports = {
 					)
 					.setThumbnail(json["avatar"])
 					.setTimestamp(Date.now());
-				await interaction.editReply({ content: "", embeds: [statsEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "guild") {
 				const guildName = interaction.options.getString("guild");
 				const response = await fetch(`https://api.ngmc.co/v1/guilds/${guildName}?expand=true`, {
@@ -634,14 +636,14 @@ module.exports = {
 					.setDescription(motd)
 					.addFields(embedFields)
 					.setTimestamp(Date.now());
-				await interaction.editReply({ content: "", embeds: [statsEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "guildleaderboard") {
 				const guildName = interaction.options.getString("guild");
 				const statistic = interaction.options.getString("statistic");
 				const period = interaction.options.getString("period");
 
 				let url = `https://api.ngmc.co/v1/guilds/${guildName}`;
-await interaction.editReply({ content: "Fetching stats... (1/2)" });
+await safeEditReply(interaction, { content: "Fetching stats... (1/2)" });
 				const response = await fetch(url, {
 					method: "GET",
 					headers: fetchHeaders,
@@ -686,7 +688,7 @@ await interaction.editReply({ content: "Fetching stats... (1/2)" });
 						period: period,
 					};
 				}
-await interaction.editReply({ content: "Fetching stats... (2/2)" });
+await safeEditReply(interaction, { content: "Fetching stats... (2/2)" });
 				const response2 = await fetch(url, {
 					method: "POST",
 					headers: fetchHeaders,
@@ -806,7 +808,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 				}
 
 				const statsEmbed = new EmbedBuilder().setColor(color).setTitle(name).setDescription(desc).addFields(embedFields).setTimestamp(Date.now());
-				await interaction.editReply({ content: "", embeds: [statsEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "gstats") {
 				const gameMode = interaction.options.getString("game");
 				const period = interaction.options.getString("period");
@@ -1217,7 +1219,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 						.setFooter({
 							text: `${footer}`,
 						});
-					await interaction.editReply({ content: "", embeds: [statsEmbed] });
+					await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 				} else {
 					const statsEmbed = new EmbedBuilder()
 						.setColor(0xd79b4e)
@@ -1226,7 +1228,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 						.addFields(embedFields)
 						.setThumbnail(thumbnail)
 						.setTimestamp(Date.now());
-					await interaction.editReply({ content: "", embeds: [statsEmbed] });
+					await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 				}
 			} else if (interaction.options.getSubcommand() == "info") {
 				const playername = interaction.options.getString("ign");
@@ -1355,7 +1357,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 					)
 					.setThumbnail(json["avatar"])
 					.setTimestamp(Date.now());
-				await interaction.editReply({ content: "", embeds: [infoEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [infoEmbed] });
 			} else if (interaction.options.getSubcommand() == "punishmentsaaaa") {
 				const playername = interaction.options.getString("ign");
 				const response = await fetch(`https://api.ngmc.co/v1/players/${playername}`, {
@@ -1379,7 +1381,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 						value: `${json["kills"]}`,
 					})
 					.setThumbnail(json["avatar"]);
-				await interaction.editReply({ content: "", embeds: [statsEmbed] });
+				await safeEditReply(interaction, { content: "", embeds: [statsEmbed] });
 			} else if (interaction.options.getSubcommand() == "skin") {
 				const playername = interaction.options.getString("ign");
 				const render = interaction.options.getBoolean("render");
@@ -1431,21 +1433,21 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 							.setTitle(`${json["name"]}'s skin`)
 							.setImage(`attachment://${json["name"].replace(/ /g, "%20")}.png`)
 							.setTimestamp(Date.now());
-						await interaction.editReply({ content: "", embeds: [skinEmbed], files: [file] });
+						await safeEditReply(interaction, { content: "", embeds: [skinEmbed], files: [file] });
 					} else {
 						throw new Error(`NetherGames API error: ${skinResponse.status}`);
 					}
 				} else {
 					const skinEmbed = new EmbedBuilder().setColor(0xd79b4e).setTitle(`${json["name"]}'s skin`).setURL(skinUrl).setImage(skinUrl).setTimestamp(Date.now());
-					await interaction.editReply({ content: "", embeds: [skinEmbed] });
+					await safeEditReply(interaction, { content: "", embeds: [skinEmbed] });
 				}
 			} else {
-				await interaction.editReply({ content: `Coming soon...`, ephemeral: true });
+				await safeEditReply(interaction, { content: `Coming soon...`, ephemeral: true });
 			}
 		} catch (error) {
 			if (String(error).includes("api error")) {
 				const ngErrEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`API Error ❌`).setDescription(String(error));
-				await interaction.editReply({
+				await safeEditReply(interaction, {
 					content: "",
 					embeds: [ngErrEmbed],
 					ephemeral: true,
@@ -1457,7 +1459,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 				}, 10000);
 			} else if (String(error).includes("not found")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`${String(error)} ❌`);
-				await interaction.editReply({
+				await safeEditReply(interaction, {
 					content: "",
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
@@ -1469,7 +1471,7 @@ await interaction.editReply({ content: "Fetching stats... (2/2)" });
 				}, 10000);
 			} else if (String(error).includes("factions data")) {
 				const playerNotFoundEmbed = new EmbedBuilder().setColor(0xff0000).setTitle(`Player has no factions data ❌`);
-				await interaction.editReply({
+				await safeEditReply(interaction, {
 					content: "",
 					embeds: [playerNotFoundEmbed],
 					ephemeral: true,
