@@ -239,7 +239,7 @@ module.exports = {
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
 				if (!playerPictureCooldowns.has(interaction.user.id)) {
 					const t1 = Date.now();
-					interaction.editReply({ content: "Fetching stats... (1/3)" });
+					await interaction.editReply({ content: "Fetching stats... (1/3)" });
 					const playername = interaction.options.getString("ign");
 					let options = interaction.options.getString("options");
 					let transparent = false;
@@ -275,7 +275,7 @@ module.exports = {
 					let json;
 					json = await response.json();
 					var skinUrl = json["skin"];
-					interaction.editReply({ content: "Fetching stats... (2/3)" });
+					await interaction.editReply({ content: "Fetching stats... (2/3)" });
 					const monthlyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=monthly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -289,7 +289,7 @@ module.exports = {
 					}
 					let monthly;
 					monthly = await monthlyResponse.json();
-					interaction.editReply({ content: "Fetching stats... (3/3)" });
+					await interaction.editReply({ content: "Fetching stats... (3/3)" });
 					const weeklyResponse = await fetch(`https://api.ngmc.co/v1/players/${playername}?period=weekly`, {
 						method: "GET",
 						headers: fetchHeaders,
@@ -309,7 +309,7 @@ module.exports = {
 					let playerPictureBuffer;
 					const t2 = Date.now();
 					let t3;
-					interaction.editReply({ content: "Downloading skin..." });
+					await interaction.editReply({ content: "Downloading skin..." });
 					if (json["skinVisibility"] && !noSkin) {
 						const skinResponse = await fetch(skinUrl);
 						if (skinResponse.status === 200) {
@@ -338,14 +338,14 @@ module.exports = {
 								}
 							}
 							t3 = Date.now();
-							interaction.editReply({ content: "Rendering Picture..." });
+							await interaction.editReply({ content: "Rendering Picture..." });
 							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked, parallel);
 						} else {
 							throw new Error(`NetherGames api error: ${response.status}`);
 						}
 					} else {
 						t3 = Date.now();
-						interaction.editReply({ content: "Rendering Picture..." });
+						await interaction.editReply({ content: "Rendering Picture..." });
 						playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked, parallel);
 					}
 
@@ -641,7 +641,7 @@ module.exports = {
 				const period = interaction.options.getString("period");
 
 				let url = `https://api.ngmc.co/v1/guilds/${guildName}`;
-interaction.editReply({ content: "Fetching stats... (1/2)" });
+await interaction.editReply({ content: "Fetching stats... (1/2)" });
 				const response = await fetch(url, {
 					method: "GET",
 					headers: fetchHeaders,
@@ -686,7 +686,7 @@ interaction.editReply({ content: "Fetching stats... (1/2)" });
 						period: period,
 					};
 				}
-interaction.editReply({ content: "Fetching stats... (2/2)" });
+await interaction.editReply({ content: "Fetching stats... (2/2)" });
 				const response2 = await fetch(url, {
 					method: "POST",
 					headers: fetchHeaders,
