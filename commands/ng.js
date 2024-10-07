@@ -679,7 +679,7 @@ await safeEditReply(interaction, { content: "Fetching stats... (1/2)" });
 
 				url = "https://api.ngmc.co/v1/players/batch";
 				let data = {
-					names: ["lioncat6", "notthatbrit"],
+					names: bulkFetchList,
 				};
 
 				if (period) {
