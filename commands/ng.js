@@ -4,6 +4,8 @@ const { ngToken } = require("../config.json");
 const playerPicture = require("../scripts/generatePlayerpicture.js");
 const utils = require("../scripts/utils.js");
 const safeEditReply = utils.safeEditReply
+const permissionHandler = require("../scripts/permissionHandler.js");
+
 
 const fetchHeaders = new Headers();
 fetchHeaders.append("Content-Type", "application/json");
