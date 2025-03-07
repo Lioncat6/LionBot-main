@@ -345,7 +345,10 @@ module.exports = {
 							await safeEditReply(interaction, { content: "Rendering Picture..." });
 							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, Buffer.from(await downloadSkin(fullSkinUrl)), transparent, unbaked, parallel);
 						} else {
-							throw new Error(`NetherGames api error: ${response.status}`);
+							console.error(`NetherGames api error: ${response.status}`);
+							t3 = Date.now();
+							await safeEditReply(interaction, { content: "Rendering Picture..." });
+							playerPictureBuffer = await playerPicture.createPlayerPictureText(json, monthly, weekly, undefined, transparent, unbaked, parallel);
 						}
 					} else {
 						t3 = Date.now();
