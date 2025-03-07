@@ -372,6 +372,16 @@ async function createPlayerPictureText(allTime, monthly, weekly, skinData, trans
 			tierPNG.scale(0.5, Jimp.RESIZE_NEAREST_NEIGHBOR);
 			bgImage.blit(tierPNG, tierPosition, 50);
 		}
+		if (muted) {
+			var mFont = await loadFont(mjBold);
+			let mutedPosition = Jimp.measureText(mFont, `${playerName}`) + imgWidth / 2 + 5;
+			let mutedPNG = await Jimp.read(`./assets/muted.png`);
+			mutedPNG.scale(0.25, Jimp.RESIZE_NEAREST_NEIGHBOR);
+			if (tier) {
+				mutedPosition = mutedPosition + 60;
+			}
+			bgImage.blit(mutedPNG, mutedPosition, 45);
+		}
 
 		bgImage = await drawText(bgImage, `${guild}`, imgWidth / 2, 20, 0.9, "#ffffff", true, shadowColor("#ffffff", 0.2), 4, true, true);
 		if (levelColors.length > 1) {
