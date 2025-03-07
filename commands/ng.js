@@ -239,7 +239,7 @@ module.exports = {
 				const onlineEmbed = new EmbedBuilder().setColor(color).setTitle(`NetherGames API Latency`).setDescription(description).setThumbnail("https://avatars.githubusercontent.com/u/26785598?s=280&v=4");
 				await safeEditReply(interaction, { content: "", embeds: [onlineEmbed] });
 			} else if (interaction.options.getSubcommand() == "playerpicture") {
-				if (!playerPictureCooldowns.has(interaction.user.id)) {
+				if ((!playerPictureCooldowns.has(interaction.user.id)) || permissionHandler.checkOverride(interaction.user.id)) {
 					const t1 = Date.now();
 					await safeEditReply(interaction, { content: "Fetching stats... (1/3)" });
 					const playername = interaction.options.getString("ign");
