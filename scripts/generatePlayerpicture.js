@@ -1,4 +1,4 @@
-const Jimp = require("jimp");
+const { Jimp } = require('jimp');
 const fs = require("node:fs");
 const path = require("node:path");
 const { kill } = require("node:process");
